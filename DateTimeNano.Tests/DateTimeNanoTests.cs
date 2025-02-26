@@ -1,15 +1,115 @@
-﻿using Seerstone;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataBento.Tests.Utilities
+﻿namespace DateTimeNano.Tests
 {
     public class DateTimeNanoTests
     {
-        public const UInt64 EpochTicks = 621355968000000000L;
+        public const ulong EpochTicks = 621355968000000000L;
+
+        private DateTimeNano _baseDateTimeNano;
+        private ulong _baseNanoseconds;
+
+        [SetUp]
+        public void Setup()
+        {
+            _baseNanoseconds = 1_700_000_000_000_000_000; // Example nanoseconds value (Epoch + ~53 years)
+            _baseDateTimeNano = new DateTimeNano(_baseNanoseconds);
+        }
+
+        [Test]
+        public void AddNanoseconds_ShouldIncreaseCorrectly()
+        {
+            const long nanosecondsToAdd = 500;
+            var result = _baseDateTimeNano.AddNanoseconds(nanosecondsToAdd);
+
+            Assert.That(_baseNanoseconds + (ulong)nanosecondsToAdd, Is.EqualTo(result.ToUnixNanoseconds()));
+        }
+
+        [Test]
+        public void AddMicroseconds_ShouldIncreaseByThousandNanoseconds()
+        {
+            const long microsecondsToAdd = 1_000; // 1,000 microseconds = 1,000,000 nanoseconds
+            var result = _baseDateTimeNano.AddMicroseconds(microsecondsToAdd);
+
+            Assert.That(_baseNanoseconds + (ulong)(microsecondsToAdd * 1_000), Is.EqualTo(result.ToUnixNanoseconds()));
+        }
+
+        [Test]
+        public void AddMilliseconds_ShouldIncreaseByMillionNanoseconds()
+        {
+            const long millisecondsToAdd = 2; // 2 milliseconds = 2,000,000 nanoseconds
+            var result = _baseDateTimeNano.AddMilliseconds(millisecondsToAdd);
+
+            Assert.That(_baseNanoseconds + (ulong)(millisecondsToAdd * 1_000_000), Is.EqualTo(result.ToUnixNanoseconds()));
+        }
+
+        [Test]
+        public void AddSeconds_ShouldIncreaseByBillionNanoseconds()
+        {
+            const long secondsToAdd = 3; // 3 seconds = 3,000,000,000 nanoseconds
+            var result = _baseDateTimeNano.AddSeconds(secondsToAdd);
+
+            Assert.That(_baseNanoseconds + (ulong)(secondsToAdd * 1_000_000_000), Is.EqualTo(result.ToUnixNanoseconds()));
+        }
+
+        [Test]
+        public void AddMinutes_ShouldIncreaseCorrectly()
+        {
+            const long minutesToAdd = 4; // 4 minutes = 4 * 60 * 1,000,000,000 nanoseconds
+            var result = _baseDateTimeNano.AddMinutes(minutesToAdd);
+
+            Assert.That(_baseNanoseconds + (ulong)(minutesToAdd * 60 * 1_000_000_000), Is.EqualTo(result.ToUnixNanoseconds()));
+        }
+
+        [Test]
+        public void AddHours_ShouldIncreaseCorrectly()
+        {
+            const long hoursToAdd = 5; // 5 hours = 5 * 60 * 60 * 1,000,000,000 nanoseconds
+            var result = _baseDateTimeNano.AddHours(hoursToAdd);
+
+            Assert.That(_baseNanoseconds + (ulong)(hoursToAdd * 60 * 60 * 1_000_000_000), Is.EqualTo(result.ToUnixNanoseconds()));
+        }
+
+        [Test]
+        public void AddDays_ShouldIncreaseCorrectly()
+        {
+            const int daysToAdd = 1; // 1 day = 24 * 60 * 60 * 1,000,000,000 nanoseconds
+            var result = _baseDateTimeNano.AddDays(daysToAdd);
+            unchecked
+            {
+                Assert.That(_baseNanoseconds + (ulong)(daysToAdd * 24 * 60 * 60 * 1_000_000_000), Is.EqualTo(result.ToUnixNanoseconds()));
+            }
+            
+        }
+
+        [Test]
+        public void AddMonths_ShouldIncreaseByExpectedMonths()
+        {
+            const int monthsToAdd = 2;
+            var expectedDateTime = _baseDateTimeNano.ToDateTimeUtc().AddMonths(monthsToAdd);
+            var result = _baseDateTimeNano.AddMonths(monthsToAdd);
+
+            Assert.That(expectedDateTime, Is.EqualTo(result.ToDateTimeUtc()));
+        }
+
+        [Test]
+        public void ToDateTimeUtc_ShouldReturnCorrectDateTime()
+        {
+            var expectedDateTime = _baseDateTimeNano.ToDateTimeUtc();
+
+            Assert.That(expectedDateTime, Is.EqualTo(_baseDateTimeNano.ToDateTimeUtc()));
+        }
+
+        [Test]
+        public void ToUnixNanoseconds_ShouldReturnCorrectValue()
+        {
+            Assert.That(_baseNanoseconds, Is.EqualTo(_baseDateTimeNano.ToUnixNanoseconds()));
+        }
+
+        [Test]
+        public void ToString_ShouldReturnFormattedString()
+        {
+            var expectedFormat = $"{_baseDateTimeNano.ToDateTimeUtc():yyyy-MM-dd HH:mm:ss}.{_baseDateTimeNano.ToUnixNanoseconds() % 1_000_000_000:D9}";
+            Assert.That(expectedFormat, Is.EqualTo(_baseDateTimeNano.ToString()));
+        }
 
         [Test]
         public void ShouldCreateDateTimeNanoEpoch()
