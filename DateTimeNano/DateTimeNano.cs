@@ -5,15 +5,9 @@
 ****************************************************************************************************************/
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace Seerstone
+namespace DateTimeNano
 {
     /// <summary>
     /// DateTimeNano - A DateTime with nanosecond precision.
