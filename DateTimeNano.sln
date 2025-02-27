@@ -4,7 +4,14 @@ VisualStudioVersion = 17.13.35617.110
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DateTimeNano", "DateTimeNano\DateTimeNano.csproj", "{8C6FDAC6-EA14-AE3F-BD8F-AC5A7757D619}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DateTimeNano.Tests", "DateTimeNano.Test\DateTimeNano.Tests.csproj", "{D8095A0B-143E-43D6-91DA-CFD42B0B212E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DateTimeNano.Tests", "DateTimeNano.Tests\DateTimeNano.Tests.csproj", "{D8095A0B-143E-43D6-91DA-CFD42B0B212E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		DateTimeNano\license.md = DateTimeNano\license.md
+		DateTimeNano\readme.md = DateTimeNano\readme.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
