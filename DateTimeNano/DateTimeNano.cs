@@ -4,6 +4,7 @@
  * Licensed under the MIT License. See LICENSE in the project root for license information.
 ****************************************************************************************************************/
 
+using ProtoBuf;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -12,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Seerstone
 {
@@ -23,6 +25,7 @@ namespace Seerstone
     /// it should be really really quick.
     /// DataBento timestamps are mainly in nanoseconds since epoch.
     /// </summary>
+    [ProtoContract]
     public struct DateTimeNano
     {
         /// <summary>
@@ -35,10 +38,13 @@ namespace Seerstone
         /// </summary>
         public DateTime DateTime => new DateTime(TotalTicks);
 
+        public DateTime Date => DateTime.Date;
+
         /// <summary>
         /// Nanoseconds since epoch
         /// </summary>
-        public ulong NanosecondsSinceEpoch;
+        [ProtoMember(1)]
+        public ulong NanosecondsSinceEpoch { get; set; }
 
         /// <summary>
         /// Total Ticks (excludes the nanoseconds portion)
@@ -204,5 +210,9 @@ namespace Seerstone
         {
             return $"{DateTime:yyyy-MM-dd HH:mm:ss}.{SecondsFractionInNanoseconds:D9}";
         }
+
+        public static implicit operator DateTime(DateTimeNano d) => d.ToDateTimeUtc();
+
+        public static explicit operator DateTimeNano(DateTime b) => new DateTimeNano(b);
     }
 }
