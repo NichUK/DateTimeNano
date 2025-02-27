@@ -205,7 +205,6 @@ namespace Seerstone
         }
 
         public static implicit operator DateTime(DateTimeNano d) => d.ToDateTimeUtc();
-
-        public static explicit operator DateTimeNano(DateTime b) => new DateTimeNano(b);
+        public static implicit operator DateTimeNano(DateTime d) => new DateTimeNano(d);
     }
 }
