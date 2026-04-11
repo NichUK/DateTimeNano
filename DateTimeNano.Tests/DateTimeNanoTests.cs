@@ -143,8 +143,20 @@ namespace DateTimeNano.Tests
         public void ToDateTimeInTimeZone_ShouldConvertCorrectly()
         {
             var utcNano = new Seerstone.DateTimeNano(new DateTime(2025, 6, 15, 12, 0, 0, DateTimeKind.Utc));
-            var eastern = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
-            var local = utcNano.ToDateTimeInTimeZone(eastern);
+
+            // Try both Windows and IANA identifiers to support all platforms.
+            TimeZoneInfo? eastern = null;
+            foreach (var id in new[] { "Eastern Standard Time", "America/New_York" })
+            {
+                if (TimeZoneInfo.TryFindSystemTimeZoneById(id, out eastern))
+                    break;
+            }
+
+            if (eastern is null)
+                Assert.Ignore("Eastern time zone not available on this platform.");
+
+
+            var local = utcNano.ToDateTimeInTimeZone(eastern!);
 
             // Eastern Daylight Time is UTC-4 in summer
             Assert.That(local.Hour, Is.EqualTo(8));
