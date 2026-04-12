@@ -304,20 +304,6 @@ namespace Seerstone
         }
 
         /// <summary>
-        /// Converts the UTC value of this instance to the local time in the specified time zone.
-        /// The returned <see cref="System.DateTime"/> includes microsecond precision but not sub-microsecond nanoseconds.
-        /// </summary>
-        /// <param name="timeZone">The target time zone.</param>
-        /// <returns>
-        ///   A <see cref="System.DateTime"/> with <see cref="DateTimeKind.Unspecified"/> representing local time
-        ///   in <paramref name="timeZone"/>.
-        /// </returns>
-        public DateTime ToDateTimeInTimeZone(TimeZoneInfo timeZone)
-        {
-            return TimeZoneInfo.ConvertTimeFromUtc(ToDateTimeUtc(), timeZone);
-        }
-
-        /// <summary>
         /// Returns the number of nanoseconds since the Unix epoch (1970-01-01 00:00:00 UTC).
         /// </summary>
         /// <returns>Nanoseconds since the Unix epoch.</returns>
