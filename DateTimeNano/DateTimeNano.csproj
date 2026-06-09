@@ -4,7 +4,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageId>Seerstone.DateTimeNano</PackageId>
-    <Version>1.1.1</Version>
+    <Version>0.1.0</Version>
     <Authors>Nich Overend</Authors>
     <Company>Seerstone</Company>
     <Description>A simple library to handle date and time in nanosecond precision.</Description>
