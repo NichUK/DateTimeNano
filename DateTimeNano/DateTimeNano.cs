@@ -26,6 +26,9 @@ namespace Seerstone
         /// </summary>
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
+        // Ticks value of the Unix epoch (1970-01-01 00:00:00 UTC) — avoids allocating a DateTime on each TotalTicks access.
+        private const long EpochTicks = 621355968000000000L;
+
         private static readonly Regex DateTimeRegex = new Regex(
             @"(?<year>\d+)-(?<month>\d+)-(?<day>\d+)\D(?<hour>\d+):(?<minute>\d+):(?<second>\d+)\.*(?<millisecond>\d{0,3})(?<microsecond>\d{0,3})(?<nanosecond>\d{0,3})",
             RegexOptions.Compiled);
@@ -49,7 +52,7 @@ namespace Seerstone
         /// <summary>
         /// Total ticks (100 ns units) truncated to microsecond precision; excludes sub-microsecond nanoseconds.
         /// </summary>
-        public long TotalTicks => Epoch.AddTicks((long)(NanosecondsSinceEpoch / 1000) * 10).Ticks;
+        public long TotalTicks => EpochTicks + (long)(NanosecondsSinceEpoch / 1000) * 10;
 
         /// <summary>
         /// Sub-microsecond nanoseconds (0-999), i.e. the last three digits of the nanosecond timestamp.
@@ -59,7 +62,7 @@ namespace Seerstone
         /// <summary>
         /// Fractional seconds expressed in nanoseconds (0-999_999_999).
         /// </summary>
-        public long SecondsFractionInNanoseconds => DateTime.Millisecond * 1000_000 + DateTime.Microsecond * 1000 + Nanoseconds;
+        public long SecondsFractionInNanoseconds => (long)(NanosecondsSinceEpoch % 1_000_000_000);
 
         /// <summary>
         /// Parse a string in the format "yyyy-MM-dd HH:mm:ss.fffffffff".
