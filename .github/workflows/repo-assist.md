@@ -40,6 +40,8 @@ if: needs.pre_activation.outputs.check_result == 'success'
 
 timeout-minutes: 60
 
+max-effective-tokens: 50M
+
 permissions: read-all
 
 network:
