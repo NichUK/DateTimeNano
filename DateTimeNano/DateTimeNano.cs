@@ -26,8 +26,8 @@ namespace Seerstone
         /// </summary>
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        // Ticks value of the Unix epoch (1970-01-01 00:00:00 UTC) — avoids allocating a DateTime on each TotalTicks access.
-        private const long EpochTicks = 621355968000000000L;
+// Ticks value of the Unix epoch (1970-01-01 00:00:00 UTC) — cached to avoid constructing a DateTime via AddTicks on each TotalTicks access.
+private static readonly long EpochTicks = Epoch.Ticks;
 
         private static readonly Regex DateTimeRegex = new Regex(
             @"(?<year>\d+)-(?<month>\d+)-(?<day>\d+)\D(?<hour>\d+):(?<minute>\d+):(?<second>\d+)\.*(?<millisecond>\d{0,3})(?<microsecond>\d{0,3})(?<nanosecond>\d{0,3})",
