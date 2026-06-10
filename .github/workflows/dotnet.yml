@@ -1,0 +1,54 @@
+name: .NET CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - framework: net8.0
+            dotnet-version: 8.0.x
+          - framework: net9.0
+            dotnet-version: 9.0.x
+          - framework: net10.0
+            dotnet-version: 10.0.x
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --framework ${{ matrix.framework }} --no-restore
+
+      - name: Test
+        run: dotnet test --configuration Release --framework ${{ matrix.framework }} --no-build --logger "trx;LogFileName=test-results-${{ matrix.framework }}.trx" --results-directory "${{ runner.temp }}/test-results/${{ matrix.framework }}"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.framework }}
+          path: ${{ runner.temp }}/test-results/${{ matrix.framework }}/*.trx
+          if-no-files-found: error
