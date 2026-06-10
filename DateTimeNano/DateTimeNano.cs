@@ -26,8 +26,26 @@ namespace Seerstone
         /// </summary>
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-// Ticks value of the Unix epoch (1970-01-01 00:00:00 UTC) — cached to avoid constructing a DateTime via AddTicks on each TotalTicks access.
-private static readonly long EpochTicks = Epoch.Ticks;
+        /// <summary>
+        /// The minimum representable value: the Unix epoch (1970-01-01 00:00:00.000000000 UTC).
+        /// </summary>
+        public static readonly DateTimeNano MinValue = new DateTimeNano(0UL);
+
+        /// <summary>
+        /// The maximum representable value (~2554-07-21 23:34:33 UTC), corresponding to
+        /// <see cref="ulong.MaxValue"/> nanoseconds since the Unix epoch.
+        /// </summary>
+        public static readonly DateTimeNano MaxValue = new DateTimeNano(ulong.MaxValue);
+
+        /// <summary>
+        /// Gets the current UTC date and time as a <see cref="DateTimeNano"/>.
+        /// Precision matches <see cref="DateTime.UtcNow"/> (~100 ns), so
+        /// <see cref="Nanoseconds"/> will always be zero.
+        /// </summary>
+        public static DateTimeNano Now => new DateTimeNano(DateTime.UtcNow);
+
+        // Ticks value of the Unix epoch (1970-01-01 00:00:00 UTC) — cached to avoid constructing a DateTime via AddTicks on each TotalTicks access.
+        private static readonly long EpochTicks = Epoch.Ticks;
 
         private static readonly Regex DateTimeRegex = new Regex(
             @"(?<year>\d+)-(?<month>\d+)-(?<day>\d+)\D(?<hour>\d+):(?<minute>\d+):(?<second>\d+)\.*(?<millisecond>\d{0,3})(?<microsecond>\d{0,3})(?<nanosecond>\d{0,3})",

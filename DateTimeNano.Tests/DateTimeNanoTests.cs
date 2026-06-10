@@ -308,5 +308,31 @@ namespace DateTimeNano.Tests
             var a = new Seerstone.DateTimeNano(1_500_000_000UL);
             Assert.That(a.Subtract(a), Is.EqualTo(0L));
         }
+
+        // ── Static members ────────────────────────────────────────────────────────
+
+        [Test]
+        public void MinValue_ShouldBeEpoch()
+        {
+            Assert.That(Seerstone.DateTimeNano.MinValue.NanosecondsSinceEpoch, Is.EqualTo(0UL));
+            Assert.That(Seerstone.DateTimeNano.MinValue.ToDateTimeUtc(), Is.EqualTo(Seerstone.DateTimeNano.Epoch));
+        }
+
+        [Test]
+        public void MaxValue_ShouldBeUlongMaxValue()
+        {
+            Assert.That(Seerstone.DateTimeNano.MaxValue.NanosecondsSinceEpoch, Is.EqualTo(ulong.MaxValue));
+        }
+
+        [Test]
+        public void Now_ShouldReturnRecentUtcTime()
+        {
+            var before = DateTime.UtcNow;
+            var now = Seerstone.DateTimeNano.Now;
+            var after = DateTime.UtcNow;
+
+            Assert.That(now.ToDateTimeUtc(), Is.GreaterThanOrEqualTo(before));
+            Assert.That(now.ToDateTimeUtc(), Is.LessThanOrEqualTo(after));
+        }
     }
 }
