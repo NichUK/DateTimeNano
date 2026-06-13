@@ -19,7 +19,7 @@ namespace Seerstone
     /// DataBento timestamps are mainly in nanoseconds since epoch.
     /// </summary>
     [ProtoContract]
-    public struct DateTimeNano : IEquatable<DateTimeNano>, IComparable<DateTimeNano>
+    public partial struct DateTimeNano : IEquatable<DateTimeNano>, IComparable<DateTimeNano>
     {
         /// <summary>
         /// Unix Epoch Date/Time (1970-01-01 00:00:00 UTC).
@@ -44,12 +44,11 @@ namespace Seerstone
         /// </summary>
         public static DateTimeNano Now => new DateTimeNano(DateTime.UtcNow);
 
-        // Ticks value of the Unix epoch (1970-01-01 00:00:00 UTC) — cached to avoid constructing a DateTime via AddTicks on each TotalTicks access.
         private static readonly long EpochTicks = Epoch.Ticks;
 
-        private static readonly Regex DateTimeRegex = new Regex(
-            @"(?<year>\d+)-(?<month>\d+)-(?<day>\d+)\D(?<hour>\d+):(?<minute>\d+):(?<second>\d+)\.*(?<millisecond>\d{0,3})(?<microsecond>\d{0,3})(?<nanosecond>\d{0,3})",
-            RegexOptions.Compiled);
+        [GeneratedRegex(
+            @"(?<year>\d+)-(?<month>\d+)-(?<day>\d+)\D(?<hour>\d+):(?<minute>\d+):(?<second>\d+)\.*(?<millisecond>\d{0,3})(?<microsecond>\d{0,3})(?<nanosecond>\d{0,3})")]
+        private static partial Regex DateTimeRegex();
 
         /// <summary>
         /// UTC DateTime part of the DateTimeNano (excludes the sub-microsecond nanoseconds portion).
@@ -111,7 +110,7 @@ namespace Seerstone
             if (string.IsNullOrEmpty(dateTimeString))
                 return false;
 
-            var match = DateTimeRegex.Match(dateTimeString);
+            var match = DateTimeRegex().Match(dateTimeString);
             if (!match.Success)
                 return false;
 
