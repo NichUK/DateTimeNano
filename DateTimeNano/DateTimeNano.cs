@@ -357,6 +357,12 @@ namespace Seerstone
         /// <summary>Returns the nanosecond difference <c>left - right</c>.</summary>
         public static long operator -(DateTimeNano left, DateTimeNano right) => left.Subtract(right);
 
+        /// <summary>Returns a new <see cref="DateTimeNano"/> shifted forward by <paramref name="nanoseconds"/>.</summary>
+        public static DateTimeNano operator +(DateTimeNano left, long nanoseconds) => left.AddNanoseconds(nanoseconds);
+
+        /// <summary>Returns a new <see cref="DateTimeNano"/> shifted back by <paramref name="nanoseconds"/>.</summary>
+        public static DateTimeNano operator -(DateTimeNano left, long nanoseconds) => left.AddNanoseconds(-nanoseconds);
+
         /// <summary>Returns <see langword="true"/> if both instances represent the same nanosecond.</summary>
         public static bool operator ==(DateTimeNano left, DateTimeNano right) => left.Equals(right);
 
