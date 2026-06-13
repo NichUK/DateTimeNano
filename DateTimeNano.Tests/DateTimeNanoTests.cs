@@ -309,6 +309,39 @@ namespace DateTimeNano.Tests
             Assert.That(a.Subtract(a), Is.EqualTo(0L));
         }
 
+        // ── Arithmetic operators ──────────────────────────────────────────────────
+
+        [Test]
+        public void PlusOperator_ShouldAddNanoseconds()
+        {
+            var a = new Seerstone.DateTimeNano(1_000_000_000UL);
+            var result = a + 500L;
+            Assert.That(result.NanosecondsSinceEpoch, Is.EqualTo(1_000_000_500UL));
+        }
+
+        [Test]
+        public void MinusOperator_Long_ShouldSubtractNanoseconds()
+        {
+            var a = new Seerstone.DateTimeNano(1_000_000_000UL);
+            var result = a - 500L;
+            Assert.That(result.NanosecondsSinceEpoch, Is.EqualTo(999_999_500UL));
+        }
+
+        [Test]
+        public void PlusOperator_NegativeValue_ShouldSubtract()
+        {
+            var a = new Seerstone.DateTimeNano(1_000_000_000UL);
+            var result = a + (-500L);
+            Assert.That(result.NanosecondsSinceEpoch, Is.EqualTo(999_999_500UL));
+        }
+
+        [Test]
+        public void MinusOperator_Long_ShouldThrow_WhenResultBeforeEpoch()
+        {
+            var a = new Seerstone.DateTimeNano(100UL);
+            Assert.Throws<ArgumentOutOfRangeException>(() => { var _ = a - 200L; });
+        }
+
         // ── Static members ────────────────────────────────────────────────────────
 
         [Test]
