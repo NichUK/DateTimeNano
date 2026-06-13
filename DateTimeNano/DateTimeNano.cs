@@ -255,6 +255,17 @@ namespace Seerstone
         }
 
         /// <summary>
+        /// Add a <see cref="TimeSpan"/> to the <see cref="DateTimeNano"/> and return a new <see cref="DateTimeNano"/>.
+        /// Precision is limited to 100-nanosecond tick resolution (matching <see cref="TimeSpan"/> precision).
+        /// </summary>
+        /// <param name="timeSpan">The duration to add. May be negative to subtract.</param>
+        /// <returns>A new <see cref="DateTimeNano"/>.</returns>
+        public DateTimeNano Add(TimeSpan timeSpan)
+        {
+            return AddNanoseconds(timeSpan.Ticks * 100);
+        }
+
+        /// <summary>
         /// Add days to the DateTimeNano and return a new DateTimeNano.
         /// </summary>
         /// <param name="days">Days to add. May be negative to subtract.</param>
@@ -356,6 +367,12 @@ namespace Seerstone
 
         /// <summary>Returns the nanosecond difference <c>left - right</c>.</summary>
         public static long operator -(DateTimeNano left, DateTimeNano right) => left.Subtract(right);
+
+        /// <summary>Shifts <paramref name="left"/> forward by the given <see cref="TimeSpan"/>.</summary>
+        public static DateTimeNano operator +(DateTimeNano left, TimeSpan right) => left.Add(right);
+
+        /// <summary>Shifts <paramref name="left"/> back by the given <see cref="TimeSpan"/>.</summary>
+        public static DateTimeNano operator -(DateTimeNano left, TimeSpan right) => left.Add(-right);
 
         /// <summary>Returns <see langword="true"/> if both instances represent the same nanosecond.</summary>
         public static bool operator ==(DateTimeNano left, DateTimeNano right) => left.Equals(right);

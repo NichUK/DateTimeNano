@@ -14,6 +14,40 @@ namespace DateTimeNano.Tests
             _baseDateTimeNano = new Seerstone.DateTimeNano(_baseNanoseconds);
         }
 
+        // ── TimeSpan interop ──────────────────────────────────────────────────────
+
+        [Test]
+        public void Add_TimeSpan_Positive_ShouldShiftForward()
+        {
+            var ts = TimeSpan.FromSeconds(1);
+            var result = _baseDateTimeNano.Add(ts);
+            Assert.That(result.ToUnixNanoseconds(), Is.EqualTo(_baseNanoseconds + 1_000_000_000UL));
+        }
+
+        [Test]
+        public void Add_TimeSpan_Negative_ShouldShiftBack()
+        {
+            var ts = TimeSpan.FromMilliseconds(-500);
+            var result = _baseDateTimeNano.Add(ts);
+            Assert.That(result.ToUnixNanoseconds(), Is.EqualTo(_baseNanoseconds - 500_000_000UL));
+        }
+
+        [Test]
+        public void OperatorPlus_TimeSpan_ShouldShiftForward()
+        {
+            var ts = TimeSpan.FromMicroseconds(250);
+            var result = _baseDateTimeNano + ts;
+            Assert.That(result.ToUnixNanoseconds(), Is.EqualTo(_baseNanoseconds + 250_000UL));
+        }
+
+        [Test]
+        public void OperatorMinus_TimeSpan_ShouldShiftBack()
+        {
+            var ts = TimeSpan.FromMicroseconds(250);
+            var result = _baseDateTimeNano - ts;
+            Assert.That(result.ToUnixNanoseconds(), Is.EqualTo(_baseNanoseconds - 250_000UL));
+        }
+
         // ── Add* methods ─────────────────────────────────────────────────────────
 
         [Test]
