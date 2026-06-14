@@ -334,6 +334,46 @@ namespace Seerstone
         }
 
         /// <summary>
+        /// Returns the number of whole milliseconds since the Unix epoch (1970-01-01 00:00:00 UTC).
+        /// Sub-millisecond nanoseconds are truncated.
+        /// </summary>
+        /// <returns>Milliseconds since the Unix epoch.</returns>
+        public long ToUnixMilliseconds() => (long)(NanosecondsSinceEpoch / 1_000_000UL);
+
+        /// <summary>
+        /// Returns the number of whole seconds since the Unix epoch (1970-01-01 00:00:00 UTC).
+        /// Sub-second nanoseconds are truncated.
+        /// </summary>
+        /// <returns>Seconds since the Unix epoch.</returns>
+        public long ToUnixSeconds() => (long)(NanosecondsSinceEpoch / 1_000_000_000UL);
+
+        /// <summary>
+        /// Creates a <see cref="DateTimeNano"/> from a Unix epoch value in milliseconds.
+        /// </summary>
+        /// <param name="milliseconds">Milliseconds since 1970-01-01 00:00:00 UTC. Must be non-negative.</param>
+        /// <returns>A new <see cref="DateTimeNano"/>.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="milliseconds"/> is negative.</exception>
+        public static DateTimeNano FromUnixMilliseconds(long milliseconds)
+        {
+            if (milliseconds < 0)
+                throw new ArgumentOutOfRangeException(nameof(milliseconds), "Value must be non-negative.");
+            return new DateTimeNano((ulong)milliseconds * 1_000_000UL);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="DateTimeNano"/> from a Unix epoch value in seconds.
+        /// </summary>
+        /// <param name="seconds">Seconds since 1970-01-01 00:00:00 UTC. Must be non-negative.</param>
+        /// <returns>A new <see cref="DateTimeNano"/>.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="seconds"/> is negative.</exception>
+        public static DateTimeNano FromUnixSeconds(long seconds)
+        {
+            if (seconds < 0)
+                throw new ArgumentOutOfRangeException(nameof(seconds), "Value must be non-negative.");
+            return new DateTimeNano((ulong)seconds * 1_000_000_000UL);
+        }
+
+        /// <summary>
         /// Returns a string representation in the format "yyyy-MM-dd HH:mm:ss.fffffffff".
         /// </summary>
         /// <returns>Formatted string.</returns>
