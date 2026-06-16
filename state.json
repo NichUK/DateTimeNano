@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-06-14T13:15:30Z",
-  "last_run_id": "27499983988",
+  "last_run": "2026-06-16T14:27:31Z",
+  "last_run_id": "27624653742",
   "comments_made": [],
   "issues_commented": [],
   "backlog_cursor": null,
@@ -37,21 +37,27 @@
       "date": "2026-06-14"
     },
     {
-      "branch": "repo-assist/eng-ci-nuget-cache-2026-06-51771b7",
-      "description": "Add NuGet package cache to CI workflow (actions/cache@v4)",
-      "pr_temp_id": "#aw_ci_cache2",
+      "branch": "repo-assist/improve-unix-epoch-helpers-51771b7",
+      "description": "Add ToUnixMilliseconds, ToUnixSeconds, FromUnixMilliseconds, FromUnixSeconds",
+      "pr_number": 22,
       "date": "2026-06-14"
     },
     {
-      "branch": "repo-assist/improve-unix-epoch-helpers-51771b7",
-      "description": "Add ToUnixMilliseconds, ToUnixSeconds, FromUnixMilliseconds, FromUnixSeconds",
-      "pr_temp_id": "#aw_unix_helpers",
-      "date": "2026-06-14"
+      "branch": "repo-assist/improve-datetimeoffset-interop",
+      "description": "Add DateTimeOffset constructor, ToDateTimeOffsetUtc(), and implicit operators",
+      "pr_temp_id": "#aw_dto_interop",
+      "date": "2026-06-16"
+    },
+    {
+      "branch": "repo-assist/forward-parsable-formattable-2026-06",
+      "description": "Implement IFormattable, IParsable<DateTimeNano>, ISpanParsable<DateTimeNano>",
+      "pr_temp_id": "#aw_parsable_fmt",
+      "date": "2026-06-16"
     }
   ],
   "monthly_activity_issue": {
     "month": "2026-06",
     "number": 16
   },
-  "notes": "Run 4: 7 open Repo Assist PRs total (#14, #15, #17, #18, #20, #aw_ci_cache2, #aw_unix_helpers). All PR CI runs show action_required — this is a GitHub bot workflow approval issue, not a code failure. The maintainer needs to approve workflow runs for bot-created PRs. Major package upgrades (NUnit 3->4, coverlet 6->10, SDK 17->18) still deferred. Task 6 found no code issues to fix in open PRs — all appear clean, just awaiting review."
+  "notes": "Run 5: Added 2 new draft PRs this run — DateTimeOffset interop (#aw_dto_interop, approx #25) and IFormattable/IParsable/ISpanParsable (#aw_parsable_fmt, approx #26). Task 2 fell back: no real user issues exist (all open issues are auto-generated). Issues #19 and #21 are duplicate informational issues about the CI cache PR that could not be pushed due to protected workflow files — #19 should be closed as superseded by #21. Issues #23/#24 are rate-limit/failure reports, will auto-expire. Existing open Repo Assist PRs: #14, #15, #17, #18, #20, #22 (6 total before this run). CI action_required status is still present for all bot PRs — maintainer needs to approve workflow runs. Major upgrades (NUnit 3->4, coverlet 6->10, SDK 17->18) still deferred."
 }
