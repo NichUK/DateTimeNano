@@ -334,5 +334,85 @@ namespace DateTimeNano.Tests
             Assert.That(now.ToDateTimeUtc(), Is.GreaterThanOrEqualTo(before));
             Assert.That(now.ToDateTimeUtc(), Is.LessThanOrEqualTo(after));
         }
+
+        // ── IFormattable ──────────────────────────────────────────────────────────
+
+        [Test]
+        public void IFormattable_NullFormat_ShouldMatchToString()
+        {
+            var nano = new Seerstone.DateTimeNano(1_739_219_232_123_456_789UL);
+            Assert.That(nano.ToString(null, null), Is.EqualTo(nano.ToString()));
+        }
+
+        [TestCase("G")]
+        [TestCase("g")]
+        [TestCase("O")]
+        [TestCase("o")]
+        public void IFormattable_RoundTripFormats_ShouldMatchToString(string format)
+        {
+            var nano = new Seerstone.DateTimeNano(1_739_219_232_123_456_789UL);
+            Assert.That(nano.ToString(format, null), Is.EqualTo(nano.ToString()));
+        }
+
+        [Test]
+        public void IFormattable_DateOnlyFormat_ShouldReturnDatePart()
+        {
+            var nano = new Seerstone.DateTimeNano(1_739_219_232_123_456_789UL); // 2025-02-10
+            Assert.That(nano.ToString("yyyy-MM-dd", null), Is.EqualTo("2025-02-10"));
+        }
+
+        [Test]
+        public void IFormattable_WorksViaStringFormat()
+        {
+            var nano = new Seerstone.DateTimeNano(1_739_219_232_123_456_789UL);
+            var result = string.Format("{0:yyyy-MM-dd}", nano);
+            Assert.That(result, Is.EqualTo("2025-02-10"));
+        }
+
+        // ── IParsable<DateTimeNano> ────────────────────────────────────────────────
+
+        [Test]
+        public void IParsable_Parse_ShouldReturnCorrectValue()
+        {
+            var result = Seerstone.DateTimeNano.Parse("2025-02-10 20:27:12.123456789", null);
+            Assert.That(result.ToString(), Is.EqualTo("2025-02-10 20:27:12.123456789"));
+        }
+
+        [Test]
+        public void IParsable_TryParse_ValidString_ShouldReturnTrue()
+        {
+            var success = Seerstone.DateTimeNano.TryParse("2025-02-10 20:27:12.123456789", null, out var result);
+            Assert.That(success, Is.True);
+            Assert.That(result.ToString(), Is.EqualTo("2025-02-10 20:27:12.123456789"));
+        }
+
+        [Test]
+        public void IParsable_TryParse_InvalidString_ShouldReturnFalse()
+        {
+            var success = Seerstone.DateTimeNano.TryParse("not-a-date", null, out var result);
+            Assert.That(success, Is.False);
+            Assert.That(result, Is.EqualTo(default(Seerstone.DateTimeNano)));
+        }
+
+        [Test]
+        public void IParsable_WorksViaGenericConstraint()
+        {
+            static T ParseVia<T>(string s) where T : IParsable<T> => T.Parse(s, null);
+            var result = ParseVia<Seerstone.DateTimeNano>("2025-02-10 20:27:12.123456789");
+            Assert.That(result.ToString(), Is.EqualTo("2025-02-10 20:27:12.123456789"));
+        }
+
+        // ── ISpanParsable<DateTimeNano> ───────────────────────────────────────────
+
+        [Test]
+        public void ISpanParsable_TryParse_WorksViaGenericConstraint()
+        {
+            static bool SpanTryParse<T>(ReadOnlySpan<char> s, out T result) where T : ISpanParsable<T>
+                => T.TryParse(s, null, out result);
+
+            var success = SpanTryParse<Seerstone.DateTimeNano>("2025-02-10 20:27:12.123456789".AsSpan(), out var result);
+            Assert.That(success, Is.True);
+            Assert.That(result.ToString(), Is.EqualTo("2025-02-10 20:27:12.123456789"));
+        }
     }
 }

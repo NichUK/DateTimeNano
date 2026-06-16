@@ -6,6 +6,7 @@
 
 using ProtoBuf;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace Seerstone
@@ -19,7 +20,8 @@ namespace Seerstone
     /// DataBento timestamps are mainly in nanoseconds since epoch.
     /// </summary>
     [ProtoContract]
-    public struct DateTimeNano : IEquatable<DateTimeNano>, IComparable<DateTimeNano>
+    public struct DateTimeNano : IEquatable<DateTimeNano>, IComparable<DateTimeNano>,
+        IFormattable, IParsable<DateTimeNano>, ISpanParsable<DateTimeNano>
     {
         /// <summary>
         /// Unix Epoch Date/Time (1970-01-01 00:00:00 UTC).
@@ -380,5 +382,48 @@ namespace Seerstone
 
         /// <summary>Implicitly converts a <see cref="System.DateTime"/> to a <see cref="DateTimeNano"/>.</summary>
         public static implicit operator DateTimeNano(DateTime d) => new DateTimeNano(d);
+
+        /// <summary>
+        /// Returns a string representation using the specified format.
+        /// </summary>
+        /// <param name="format">
+        ///   Format string. Use <see langword="null"/>, <c>"G"</c>, <c>"g"</c>, <c>"O"</c>, or <c>"o"</c>
+        ///   for full nanosecond-precision output (<c>"yyyy-MM-dd HH:mm:ss.fffffffff"</c>).
+        ///   Any other standard or custom <see cref="DateTime"/> format string produces output at
+        ///   <see cref="DateTime"/> precision (sub-microsecond nanoseconds are not included).
+        /// </param>
+        /// <param name="formatProvider">Culture or format provider; ignored for full-precision formats.</param>
+        public string ToString(string? format, IFormatProvider? formatProvider)
+        {
+            if (string.IsNullOrEmpty(format) || format == "G" || format == "g" ||
+                format == "O" || format == "o")
+                return ToString();
+            return DateTime.ToString(format, formatProvider);
+        }
+
+        /// <summary>
+        /// Parses a <see cref="DateTimeNano"/> from a string, ignoring <paramref name="provider"/>.
+        /// </summary>
+        public static DateTimeNano Parse(string s, IFormatProvider? provider) => Parse(s);
+
+        /// <summary>
+        /// Attempts to parse a <see cref="DateTimeNano"/> from a string, ignoring <paramref name="provider"/>.
+        /// </summary>
+        public static bool TryParse(
+            [NotNullWhen(true)] string? s,
+            IFormatProvider? provider,
+            [MaybeNullWhen(false)] out DateTimeNano result)
+            => TryParse(s, out result);
+
+        /// <inheritdoc/>
+        static DateTimeNano ISpanParsable<DateTimeNano>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+            => Parse(s.ToString());
+
+        /// <inheritdoc/>
+        static bool ISpanParsable<DateTimeNano>.TryParse(
+            ReadOnlySpan<char> s,
+            IFormatProvider? provider,
+            out DateTimeNano result)
+            => TryParse(s.IsEmpty ? null : s.ToString(), out result);
     }
 }
