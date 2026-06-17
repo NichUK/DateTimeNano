@@ -442,5 +442,28 @@ namespace Seerstone
 
         /// <summary>Implicitly converts a <see cref="System.DateTime"/> to a <see cref="DateTimeNano"/>.</summary>
         public static implicit operator DateTimeNano(DateTime d) => new DateTimeNano(d);
+
+        /// <summary>
+        /// Create a <see cref="DateTimeNano"/> from a <see cref="System.DateTimeOffset"/>.
+        /// The offset is converted to UTC before the nanosecond value is computed,
+        /// so the stored timestamp always represents the UTC instant.
+        /// </summary>
+        /// <param name="datetimeOffset">The source <see cref="System.DateTimeOffset"/>.</param>
+        public DateTimeNano(DateTimeOffset datetimeOffset)
+            : this(datetimeOffset.UtcDateTime) { }
+
+        /// <summary>
+        /// Returns the UTC date and time as a <see cref="System.DateTimeOffset"/> with a zero UTC offset.
+        /// Sub-microsecond nanoseconds are not representable in <see cref="System.DateTimeOffset"/>
+        /// and are truncated; access them via <see cref="Nanoseconds"/>.
+        /// </summary>
+        /// <returns>A <see cref="System.DateTimeOffset"/> in UTC.</returns>
+        public DateTimeOffset ToDateTimeOffsetUtc() => new DateTimeOffset(DateTime, TimeSpan.Zero);
+
+        /// <summary>Implicitly converts a <see cref="DateTimeNano"/> to a UTC <see cref="System.DateTimeOffset"/>.</summary>
+        public static implicit operator DateTimeOffset(DateTimeNano d) => d.ToDateTimeOffsetUtc();
+
+        /// <summary>Implicitly converts a <see cref="System.DateTimeOffset"/> to a <see cref="DateTimeNano"/>.</summary>
+        public static implicit operator DateTimeNano(DateTimeOffset d) => new DateTimeNano(d);
     }
 }

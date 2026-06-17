@@ -448,6 +448,61 @@ namespace DateTimeNano.Tests
             Assert.That(now.ToDateTimeUtc(), Is.LessThanOrEqualTo(after));
         }
 
+        // ── DateTimeOffset interop ────────────────────────────────────────────────
+
+        [Test]
+        public void Constructor_DateTimeOffset_UtcOffset_ShouldStoreCorrectNanoseconds()
+        {
+            var dto = new DateTimeOffset(2025, 2, 10, 20, 27, 12, 123, TimeSpan.Zero);
+            var nano = new Seerstone.DateTimeNano(dto);
+            Assert.That(nano.NanosecondsSinceEpoch, Is.EqualTo(1_739_219_232_123_000_000UL));
+        }
+
+        [Test]
+        public void Constructor_DateTimeOffset_NonUtcOffset_ShouldConvertToUtc()
+        {
+            // +05:30 (IST) — same instant as 15:00 UTC
+            var dto = new DateTimeOffset(2025, 2, 10, 20, 30, 0, TimeSpan.FromHours(5.5));
+            var expected = new Seerstone.DateTimeNano(dto.UtcDateTime);
+            var actual = new Seerstone.DateTimeNano(dto);
+            Assert.That(actual.NanosecondsSinceEpoch, Is.EqualTo(expected.NanosecondsSinceEpoch));
+        }
+
+        [Test]
+        public void ToDateTimeOffsetUtc_ShouldReturnUtcOffset()
+        {
+            var nano = new Seerstone.DateTimeNano(1_739_219_232_123_000_000UL);
+            var dto = nano.ToDateTimeOffsetUtc();
+            Assert.That(dto.Offset, Is.EqualTo(TimeSpan.Zero));
+            Assert.That(dto.UtcDateTime, Is.EqualTo(new DateTime(2025, 2, 10, 20, 27, 12, 123, DateTimeKind.Utc)));
+        }
+
+        [Test]
+        public void ImplicitOperator_DateTimeNanoToDateTimeOffset_ShouldBeUtc()
+        {
+            var nano = new Seerstone.DateTimeNano(1_739_219_232_123_000_000UL);
+            DateTimeOffset dto = nano;
+            Assert.That(dto.Offset, Is.EqualTo(TimeSpan.Zero));
+            Assert.That(dto.UtcDateTime, Is.EqualTo(nano.ToDateTimeUtc()));
+        }
+
+        [Test]
+        public void ImplicitOperator_DateTimeOffsetToDateTimeNano_RoundTrips()
+        {
+            var original = new DateTimeOffset(2025, 2, 10, 20, 27, 12, 123, TimeSpan.Zero);
+            Seerstone.DateTimeNano nano = original;
+            DateTimeOffset roundTripped = nano;
+            Assert.That(roundTripped, Is.EqualTo(original));
+        }
+
+        [Test]
+        public void ImplicitOperator_NonUtcDateTimeOffset_ShouldNormalisedToUtc()
+        {
+            var dto = new DateTimeOffset(2025, 2, 10, 21, 27, 12, 123, TimeSpan.FromHours(1));
+            Seerstone.DateTimeNano nano = dto;
+            Assert.That(nano.ToDateTimeUtc(), Is.EqualTo(dto.UtcDateTime));
+        }
+
         // ── Parts constructor ─────────────────────────────────────────────────────
 
         [Test]
