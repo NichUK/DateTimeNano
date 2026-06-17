@@ -14,6 +14,40 @@ namespace DateTimeNano.Tests
             _baseDateTimeNano = new Seerstone.DateTimeNano(_baseNanoseconds);
         }
 
+        // ── TimeSpan interop ──────────────────────────────────────────────────────
+
+        [Test]
+        public void Add_TimeSpan_Positive_ShouldShiftForward()
+        {
+            var ts = TimeSpan.FromSeconds(1);
+            var result = _baseDateTimeNano.Add(ts);
+            Assert.That(result.ToUnixNanoseconds(), Is.EqualTo(_baseNanoseconds + 1_000_000_000UL));
+        }
+
+        [Test]
+        public void Add_TimeSpan_Negative_ShouldShiftBack()
+        {
+            var ts = TimeSpan.FromMilliseconds(-500);
+            var result = _baseDateTimeNano.Add(ts);
+            Assert.That(result.ToUnixNanoseconds(), Is.EqualTo(_baseNanoseconds - 500_000_000UL));
+        }
+
+        [Test]
+        public void OperatorPlus_TimeSpan_ShouldShiftForward()
+        {
+            var ts = TimeSpan.FromMicroseconds(250);
+            var result = _baseDateTimeNano + ts;
+            Assert.That(result.ToUnixNanoseconds(), Is.EqualTo(_baseNanoseconds + 250_000UL));
+        }
+
+        [Test]
+        public void OperatorMinus_TimeSpan_ShouldShiftBack()
+        {
+            var ts = TimeSpan.FromMicroseconds(250);
+            var result = _baseDateTimeNano - ts;
+            Assert.That(result.ToUnixNanoseconds(), Is.EqualTo(_baseNanoseconds - 250_000UL));
+        }
+
         // ── Add* methods ─────────────────────────────────────────────────────────
 
         [Test]
@@ -137,6 +171,52 @@ namespace DateTimeNano.Tests
         public void ToUnixNanoseconds_ShouldReturnCorrectValue()
         {
             Assert.That(_baseNanoseconds, Is.EqualTo(_baseDateTimeNano.ToUnixNanoseconds()));
+        }
+
+        [Test]
+        public void ToUnixMilliseconds_ShouldReturnWholeMilliseconds()
+        {
+            // 1_500_000_000 ns = 1_500 ms (sub-millisecond truncated)
+            var dt = new Seerstone.DateTimeNano(1_500_000_999UL);
+            Assert.That(dt.ToUnixMilliseconds(), Is.EqualTo(1_500L));
+        }
+
+        [Test]
+        public void ToUnixSeconds_ShouldReturnWholeSeconds()
+        {
+            // 3_000_000_000 ns = 3 s (sub-second truncated)
+            var dt = new Seerstone.DateTimeNano(3_000_000_999UL);
+            Assert.That(dt.ToUnixSeconds(), Is.EqualTo(3L));
+        }
+
+        [Test]
+        public void FromUnixMilliseconds_ShouldRoundTrip()
+        {
+            var dt = new Seerstone.DateTimeNano(2_000_000_000UL); // 2 seconds exactly
+            var ms = dt.ToUnixMilliseconds();
+            var restored = Seerstone.DateTimeNano.FromUnixMilliseconds(ms);
+            Assert.That(restored.NanosecondsSinceEpoch, Is.EqualTo(2_000_000_000UL));
+        }
+
+        [Test]
+        public void FromUnixSeconds_ShouldRoundTrip()
+        {
+            var dt = new Seerstone.DateTimeNano(5_000_000_000UL); // 5 seconds exactly
+            var secs = dt.ToUnixSeconds();
+            var restored = Seerstone.DateTimeNano.FromUnixSeconds(secs);
+            Assert.That(restored.NanosecondsSinceEpoch, Is.EqualTo(5_000_000_000UL));
+        }
+
+        [Test]
+        public void FromUnixMilliseconds_Negative_ShouldThrow()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => Seerstone.DateTimeNano.FromUnixMilliseconds(-1));
+        }
+
+        [Test]
+        public void FromUnixSeconds_Negative_ShouldThrow()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => Seerstone.DateTimeNano.FromUnixSeconds(-1));
         }
 
         // ── ToString ──────────────────────────────────────────────────────────────
@@ -309,6 +389,39 @@ namespace DateTimeNano.Tests
             Assert.That(a.Subtract(a), Is.EqualTo(0L));
         }
 
+        // ── Arithmetic operators ──────────────────────────────────────────────────
+
+        [Test]
+        public void PlusOperator_ShouldAddNanoseconds()
+        {
+            var a = new Seerstone.DateTimeNano(1_000_000_000UL);
+            var result = a + 500L;
+            Assert.That(result.NanosecondsSinceEpoch, Is.EqualTo(1_000_000_500UL));
+        }
+
+        [Test]
+        public void MinusOperator_Long_ShouldSubtractNanoseconds()
+        {
+            var a = new Seerstone.DateTimeNano(1_000_000_000UL);
+            var result = a - 500L;
+            Assert.That(result.NanosecondsSinceEpoch, Is.EqualTo(999_999_500UL));
+        }
+
+        [Test]
+        public void PlusOperator_NegativeValue_ShouldSubtract()
+        {
+            var a = new Seerstone.DateTimeNano(1_000_000_000UL);
+            var result = a + (-500L);
+            Assert.That(result.NanosecondsSinceEpoch, Is.EqualTo(999_999_500UL));
+        }
+
+        [Test]
+        public void MinusOperator_Long_ShouldThrow_WhenResultBeforeEpoch()
+        {
+            var a = new Seerstone.DateTimeNano(100UL);
+            Assert.Throws<ArgumentOutOfRangeException>(() => { var _ = a - 200L; });
+        }
+
         // ── Static members ────────────────────────────────────────────────────────
 
         [Test]
@@ -386,6 +499,180 @@ namespace DateTimeNano.Tests
             Assert.That(result.ToString(), Is.EqualTo("2025-02-10 20:27:12.123456789"));
         }
 
+        // ── DateTimeOffset interop ────────────────────────────────────────────────
+
+        [Test]
+        public void Constructor_DateTimeOffset_UtcOffset_ShouldStoreCorrectNanoseconds()
+        {
+            var dto = new DateTimeOffset(2025, 2, 10, 20, 27, 12, 123, TimeSpan.Zero);
+            var nano = new Seerstone.DateTimeNano(dto);
+            Assert.That(nano.NanosecondsSinceEpoch, Is.EqualTo(1_739_219_232_123_000_000UL));
+        }
+
+        [Test]
+        public void Constructor_DateTimeOffset_NonUtcOffset_ShouldConvertToUtc()
+        {
+            // +05:30 (IST) — same instant as 15:00 UTC
+            var dto = new DateTimeOffset(2025, 2, 10, 20, 30, 0, TimeSpan.FromHours(5.5));
+            var expected = new Seerstone.DateTimeNano(dto.UtcDateTime);
+            var actual = new Seerstone.DateTimeNano(dto);
+            Assert.That(actual.NanosecondsSinceEpoch, Is.EqualTo(expected.NanosecondsSinceEpoch));
+        }
+
+        [Test]
+        public void ToDateTimeOffsetUtc_ShouldReturnUtcOffset()
+        {
+            var nano = new Seerstone.DateTimeNano(1_739_219_232_123_000_000UL);
+            var dto = nano.ToDateTimeOffsetUtc();
+            Assert.That(dto.Offset, Is.EqualTo(TimeSpan.Zero));
+            Assert.That(dto.UtcDateTime, Is.EqualTo(new DateTime(2025, 2, 10, 20, 27, 12, 123, DateTimeKind.Utc)));
+        }
+
+        [Test]
+        public void ImplicitOperator_DateTimeNanoToDateTimeOffset_ShouldBeUtc()
+        {
+            var nano = new Seerstone.DateTimeNano(1_739_219_232_123_000_000UL);
+            DateTimeOffset dto = nano;
+            Assert.That(dto.Offset, Is.EqualTo(TimeSpan.Zero));
+            Assert.That(dto.UtcDateTime, Is.EqualTo(nano.ToDateTimeUtc()));
+        }
+
+        [Test]
+        public void ImplicitOperator_DateTimeOffsetToDateTimeNano_RoundTrips()
+        {
+            var original = new DateTimeOffset(2025, 2, 10, 20, 27, 12, 123, TimeSpan.Zero);
+            Seerstone.DateTimeNano nano = original;
+            DateTimeOffset roundTripped = nano;
+            Assert.That(roundTripped, Is.EqualTo(original));
+        }
+
+        [Test]
+        public void ImplicitOperator_NonUtcDateTimeOffset_ShouldNormalisedToUtc()
+        {
+            var dto = new DateTimeOffset(2025, 2, 10, 21, 27, 12, 123, TimeSpan.FromHours(1));
+            Seerstone.DateTimeNano nano = dto;
+            Assert.That(nano.ToDateTimeUtc(), Is.EqualTo(dto.UtcDateTime));
+        }
+
+        // ── Parts constructor ─────────────────────────────────────────────────────
+
+        [Test]
+        public void Constructor_Parts_ShouldCreateCorrectValue()
+        {
+            var dt = new Seerstone.DateTimeNano(2025, 2, 10, 20, 27, 12, 123, 456, 789);
+            Assert.That(dt.NanosecondsSinceEpoch, Is.EqualTo(1739219232123456789UL));
+        }
+
+        [Test]
+        public void Constructor_Parts_DefaultsToMidnight()
+        {
+            var dt = new Seerstone.DateTimeNano(2025, 1, 1);
+            var expected = new Seerstone.DateTimeNano(new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+            Assert.That(dt.NanosecondsSinceEpoch, Is.EqualTo(expected.NanosecondsSinceEpoch));
+        }
+
+        [Test]
+        public void Constructor_LocalDateTime_ShouldConvertToUtc()
+        {
+            var local = new DateTime(2025, 6, 1, 12, 0, 0, DateTimeKind.Local);
+            var utc = local.ToUniversalTime();
+            var dtn = new Seerstone.DateTimeNano(local);
+            var expected = new Seerstone.DateTimeNano(utc);
+            Assert.That(dtn.NanosecondsSinceEpoch, Is.EqualTo(expected.NanosecondsSinceEpoch));
+        }
+
+        // ── Date property ─────────────────────────────────────────────────────────
+
+        [Test]
+        public void Date_Property_ShouldReturnMidnight()
+        {
+            var dt = new Seerstone.DateTimeNano(2025, 2, 10, 15, 30, 45, 123, 456, 789);
+            var date = dt.Date;
+            Assert.That(date, Is.EqualTo(new DateTime(2025, 2, 10, 0, 0, 0, DateTimeKind.Utc)));
+        }
+
+        // ── AddNanoseconds overflow guard ─────────────────────────────────────────
+
+        [Test]
+        public void AddNanoseconds_ShouldThrow_WhenPositiveOverflow()
+        {
+            var nano = Seerstone.DateTimeNano.MaxValue;
+            Assert.Throws<ArgumentOutOfRangeException>(() => nano.AddNanoseconds(1));
+        }
+
+        // ── Negative Add* methods ─────────────────────────────────────────────────
+
+        [Test]
+        public void AddMonths_Negative_ShouldDecreaseCorrectly()
+        {
+            const int monthsToSubtract = 2;
+            var expected = _baseDateTimeNano.ToDateTimeUtc().AddMonths(-monthsToSubtract);
+            var result = _baseDateTimeNano.AddMonths(-monthsToSubtract);
+            Assert.That(result.ToDateTimeUtc(), Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void AddYears_Negative_ShouldDecreaseCorrectly()
+        {
+            const int yearsToSubtract = 3;
+            var expected = _baseDateTimeNano.ToDateTimeUtc().AddYears(-yearsToSubtract);
+            var result = _baseDateTimeNano.AddYears(-yearsToSubtract);
+            Assert.That(result.ToDateTimeUtc(), Is.EqualTo(expected));
+        }
+
+        // ── Equals(object?) override ──────────────────────────────────────────────
+
+        [Test]
+        public void Equals_Object_ShouldReturnTrue_ForEqualValue()
+        {
+            var a = new Seerstone.DateTimeNano(1_000_000_000UL);
+            object b = new Seerstone.DateTimeNano(1_000_000_000UL);
+            Assert.That(a.Equals(b), Is.True);
+        }
+
+        [Test]
+        public void Equals_Object_ShouldReturnFalse_ForNull()
+        {
+            var a = new Seerstone.DateTimeNano(1_000_000_000UL);
+            Assert.That(a.Equals(null), Is.False);
+        }
+
+        [Test]
+        public void Equals_Object_ShouldReturnFalse_ForDifferentType()
+        {
+            var a = new Seerstone.DateTimeNano(1_000_000_000UL);
+            Assert.That(a.Equals("not a DateTimeNano"), Is.False);
+        }
+
+        // ── Implicit conversion operators ─────────────────────────────────────────
+
+        [Test]
+        public void ImplicitConversion_DateTimeNano_To_DateTime()
+        {
+            Seerstone.DateTimeNano dtn = new Seerstone.DateTimeNano(1_739_219_232_123_456_000UL);
+            DateTime dt = dtn;
+            Assert.That(dt.Kind, Is.EqualTo(DateTimeKind.Utc));
+            Assert.That(dt, Is.EqualTo(dtn.ToDateTimeUtc()));
+        }
+
+        [Test]
+        public void ImplicitConversion_DateTime_To_DateTimeNano()
+        {
+            var dt = new DateTime(2025, 2, 10, 20, 27, 12, 123, DateTimeKind.Utc);
+            Seerstone.DateTimeNano dtn = dt;
+            Assert.That(dtn.NanosecondsSinceEpoch, Is.EqualTo(1739219232123000000UL));
+        }
+
+        // ── TryParse: T separator (ISO 8601) ──────────────────────────────────────
+
+        [Test]
+        public void TryParse_WithTSeparator_ShouldSucceed()
+        {
+            var success = Seerstone.DateTimeNano.TryParse("2025-02-10T20:27:12.123456789", out var result);
+            Assert.That(success, Is.True);
+            Assert.That(result.ToString(), Is.EqualTo("2025-02-10 20:27:12.123456789"));
+        }
+
         [Test]
         public void IParsable_TryParse_InvalidString_ShouldReturnFalse()
         {
@@ -413,6 +700,24 @@ namespace DateTimeNano.Tests
             var success = SpanTryParse<Seerstone.DateTimeNano>("2025-02-10 20:27:12.123456789".AsSpan(), out var result);
             Assert.That(success, Is.True);
             Assert.That(result.ToString(), Is.EqualTo("2025-02-10 20:27:12.123456789"));
+        }
+
+        [Test]
+        public void Parse_WithTSeparator_ShouldSucceed()
+        {
+            var result = Seerstone.DateTimeNano.Parse("2025-02-10T20:27:12.000000000");
+            Assert.That(result.ToDateTimeUtc(), Is.EqualTo(new DateTime(2025, 2, 10, 20, 27, 12, DateTimeKind.Utc)));
+        }
+
+        // ── Subtract overflow ─────────────────────────────────────────────────────
+
+        [Test]
+        public void Subtract_ShouldThrow_WhenDifferenceExceedsLongMaxValue()
+        {
+            // ulong.MaxValue ns ≈ 584 years; a gap >292 years exceeds long.MaxValue
+            var large = Seerstone.DateTimeNano.MaxValue;
+            var zero = Seerstone.DateTimeNano.MinValue;
+            Assert.Throws<OverflowException>(() => large.Subtract(zero));
         }
     }
 }
