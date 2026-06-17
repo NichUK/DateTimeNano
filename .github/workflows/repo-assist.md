@@ -81,13 +81,13 @@ safe-outputs:
     draft: true
     title-prefix: "[repo-assist] "
     labels: [automation, repo-assist]
-    protected-files: fallback-to-issue
+    protected-files: none
     max: 4
   push-to-pull-request-branch:
     target: "*"
     required-title-prefix: "[repo-assist] "
     max: 4
-    protected-files: fallback-to-issue
+    protected-files: none
   create-issue:
     title-prefix: "[repo-assist] "
     labels: [automation, repo-assist]
