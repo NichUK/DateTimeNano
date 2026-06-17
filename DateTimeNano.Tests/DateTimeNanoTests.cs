@@ -173,6 +173,52 @@ namespace DateTimeNano.Tests
             Assert.That(_baseNanoseconds, Is.EqualTo(_baseDateTimeNano.ToUnixNanoseconds()));
         }
 
+        [Test]
+        public void ToUnixMilliseconds_ShouldReturnWholeMilliseconds()
+        {
+            // 1_500_000_000 ns = 1_500 ms (sub-millisecond truncated)
+            var dt = new Seerstone.DateTimeNano(1_500_000_999UL);
+            Assert.That(dt.ToUnixMilliseconds(), Is.EqualTo(1_500L));
+        }
+
+        [Test]
+        public void ToUnixSeconds_ShouldReturnWholeSeconds()
+        {
+            // 3_000_000_000 ns = 3 s (sub-second truncated)
+            var dt = new Seerstone.DateTimeNano(3_000_000_999UL);
+            Assert.That(dt.ToUnixSeconds(), Is.EqualTo(3L));
+        }
+
+        [Test]
+        public void FromUnixMilliseconds_ShouldRoundTrip()
+        {
+            var dt = new Seerstone.DateTimeNano(2_000_000_000UL); // 2 seconds exactly
+            var ms = dt.ToUnixMilliseconds();
+            var restored = Seerstone.DateTimeNano.FromUnixMilliseconds(ms);
+            Assert.That(restored.NanosecondsSinceEpoch, Is.EqualTo(2_000_000_000UL));
+        }
+
+        [Test]
+        public void FromUnixSeconds_ShouldRoundTrip()
+        {
+            var dt = new Seerstone.DateTimeNano(5_000_000_000UL); // 5 seconds exactly
+            var secs = dt.ToUnixSeconds();
+            var restored = Seerstone.DateTimeNano.FromUnixSeconds(secs);
+            Assert.That(restored.NanosecondsSinceEpoch, Is.EqualTo(5_000_000_000UL));
+        }
+
+        [Test]
+        public void FromUnixMilliseconds_Negative_ShouldThrow()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => Seerstone.DateTimeNano.FromUnixMilliseconds(-1));
+        }
+
+        [Test]
+        public void FromUnixSeconds_Negative_ShouldThrow()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => Seerstone.DateTimeNano.FromUnixSeconds(-1));
+        }
+
         // ── ToString ──────────────────────────────────────────────────────────────
 
         [Test]
