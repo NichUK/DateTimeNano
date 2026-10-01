@@ -694,7 +694,7 @@ namespace DateTimeNano.Tests
         [Test]
         public void ISpanParsable_TryParse_WorksViaGenericConstraint()
         {
-            static bool SpanTryParse<T>(ReadOnlySpan<char> s, out T result) where T : ISpanParsable<T>
+            static bool SpanTryParse<T>(ReadOnlySpan<char> s, out T result) where T : struct, ISpanParsable<T>
                 => T.TryParse(s, null, out result);
 
             var success = SpanTryParse<Seerstone.DateTimeNano>("2025-02-10 20:27:12.123456789".AsSpan(), out var result);
