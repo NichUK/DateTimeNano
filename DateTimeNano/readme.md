@@ -2,7 +2,7 @@
 
 A **simple** library to handle date and time in nanosecond precision.
 
-Originally written to handle Nanosecond timestamps in (DataBento)[https://www.databento.com] trading data, 
+Originally written to handle Nanosecond timestamps in [DataBento](https://www.databento.com) trading data, 
 this library maintains the date and time as a ulong (unsigned long) representing the number of nanoseconds since the Unix epoch
 (1970-01-01T00:00:00).
 
