@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-10-01T09:33:43Z",
-  "last_run_id": "36800967755",
+  "last_run": "2026-10-01T12:56:04Z",
+  "last_run_id": "36864939994",
   "comments_made": [],
   "issues_commented": [],
   "backlog_cursor": null,
@@ -8,14 +8,26 @@
   "improvements_submitted": [
     {
       "branch": "repo-assist/eng-sync-develop-with-main-2026-10",
-      "description": "Merged main into develop: restores dotnet.yml CI workflow and several previously-merged library features (arithmetic/TimeSpan/DateTimeOffset interop, IFormattable/IParsable/ISpanParsable, Unix epoch helpers, GeneratedRegex perf, protobuf-net.Core 3.2.56, 411 lines of tests) that existed only on main. Build + 87/87 tests passed on net8/9/10.",
+      "description": "Merged main into develop: restores dotnet.yml CI workflow and several previously-merged library features (arithmetic/TimeSpan/DateTimeOffset interop, IFormattable/IParsable/ISpanParsable, Unix epoch helpers, GeneratedRegex perf, protobuf-net.Core 3.2.56, 411 lines of tests) that existed only on main. Build + 87/87 tests passed on net8/9/10. Blocked as a real PR by protected-files policy -> landed as issue #37 with a manual-create-PR link; still open, awaiting maintainer action.",
+      "date": "2026-10-01"
+    },
+    {
+      "branch": "repo-assist/perf-tostring-no-alloc",
+      "description": "DateTimeNano.ToString() implemented ISpanFormattable.TryFormat to avoid two intermediate string allocations previously caused by interpolation ($\"{DateTime:...}.{frac:D9}\"). ToString() now backed by string.Create+TryFormat. Custom format strings still fall back to DateTime-precision formatting exactly as before. Added 3 new tests (TryFormat default/custom format, too-small destination). Build succeeded, 90/90 tests passed net8/9/10. Created as draft PR via safeoutputs create_pull_request (Task 8 - Performance Improvements).",
       "date": "2026-10-01"
     }
   ],
   "monthly_activity_issue": {
     "month": "2026-10",
-    "number": null,
-    "note": "Issue #16 (2026-06) was closed by maintainer on 2026-06-17. Created new issue for 2026-10 this run; number not yet known (created via safeoutputs create_issue, resolves post-merge)."
+    "number": 38,
+    "note": "Issue #38 created 2026-10-01 for October; rewritten in full each run per the mandated format. Suggested Actions currently lists: review of the new perf PR, review/manual-creation of issue #37's sync PR, closing stale auth-failure issues #33/#34/#35, and investigating the recurring HTTP 401 provider auth failures."
   },
-  "notes": "Run 2026-10-01: Discovered develop (default branch) had drifted far behind main - missing CI workflow (.github/workflows/dotnet.yml) entirely and ~6 previously-merged repo-assist features/tests (PRs #14,15,17,18,20,22,25,26 all merged to main, none present on develop). Opened PR merging main->develop (2 trivial conflicts in repo-assist.lock.yml/repo-assist.md resolved keeping develop's live workflow config). Build succeeded, 87/87 tests passed all TFMs. Open issues #33/#34/#35 are all auto-generated Repo Assist engine-auth-failure reports (HTTP 401 from provider) - not real bugs, nothing to comment on/fix; they self-expire. Recommend maintainer investigate the recurring 401 auth failures (possible expired COPILOT_PROVIDER_API_KEY). Task 2/5 fell back since no real user issues or additional low-risk improvements were found beyond the sync. No open Repo Assist PRs existed at start of this run (previous ones all merged in June). Next run: check if the sync PR was merged/reviewed; if merged, re-baseline which branch (main vs develop) is canonical going forward to prevent recurrence."
+  "open_issues_snapshot": {
+    "date": "2026-10-01",
+    "33": "auto-generated engine-auth-failure report (401), auto-expires 2026-10-05, not a real bug",
+    "34": "auto-generated engine-auth-failure report (401), auto-expires 2026-10-07, not a real bug",
+    "35": "auto-generated engine-auth-failure report (401), auto-expires 2026-10-08, not a real bug",
+    "37": "repo-assist eng PR (sync develop<-main) blocked by protected-files policy; exists only as an issue with a manual-create link, not a real PR; no CI/merge status to check yet"
+  },
+  "notes": "Run 2026-10-01 12:56 UTC (run 36864939994): Task selection was [3 Issue Fix, 2 Issue Comment, 8 Performance]. Confirmed #33/#34/#35 are still just auto-expiring Repo Assist engine-failure reports (not real user bugs/questions) -> Tasks 2 and 3 had nothing actionable and fell back to no-op on issues. Instead delivered Task 8: implemented ISpanFormattable on DateTimeNano to eliminate the two intermediate string allocations ToString() previously made via string interpolation; verified identical output via existing + 3 new tests (90/90 passing on net8/9/10), opened as draft PR repo-assist/perf-tostring-no-alloc. Also discovered issue #37 (previous run's 'PR') never became a real PR - it was blocked by protected-files policy and only exists as an issue with a manual compare link; flagged this in Monthly Activity suggested actions for the maintainer. Next run: check if issue #37's PR was manually created/merged and if the perf PR was reviewed; re-scan for new open issues since none existed to act on this run beyond the stale auto-reports."
 }
