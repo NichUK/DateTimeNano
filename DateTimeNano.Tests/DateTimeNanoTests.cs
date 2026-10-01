@@ -482,6 +482,40 @@ namespace DateTimeNano.Tests
             Assert.That(result, Is.EqualTo("2025-02-10"));
         }
 
+        // ── ISpanFormattable ───────────────────────────────────────────────────────
+
+        [Test]
+        public void TryFormat_DefaultFormat_WritesFullPrecisionString()
+        {
+            var nano = new Seerstone.DateTimeNano(1_739_219_232_123_456_789UL);
+            Span<char> buffer = stackalloc char[29];
+            var success = nano.TryFormat(buffer, out var charsWritten);
+            Assert.That(success, Is.True);
+            Assert.That(charsWritten, Is.EqualTo(29));
+            Assert.That(buffer.ToString(), Is.EqualTo("2025-02-10 20:27:12.123456789"));
+        }
+
+        [Test]
+        public void TryFormat_CustomFormat_MatchesToStringWithFormat()
+        {
+            var nano = new Seerstone.DateTimeNano(1_739_219_232_123_456_789UL);
+            Span<char> buffer = stackalloc char[10];
+            var success = nano.TryFormat(buffer, out var charsWritten, "yyyy-MM-dd");
+            Assert.That(success, Is.True);
+            Assert.That(charsWritten, Is.EqualTo(10));
+            Assert.That(buffer.ToString(), Is.EqualTo(nano.ToString("yyyy-MM-dd", null)));
+        }
+
+        [Test]
+        public void TryFormat_DestinationTooSmall_ReturnsFalse()
+        {
+            var nano = new Seerstone.DateTimeNano(1_739_219_232_123_456_789UL);
+            Span<char> buffer = stackalloc char[5];
+            var success = nano.TryFormat(buffer, out var charsWritten);
+            Assert.That(success, Is.False);
+            Assert.That(charsWritten, Is.EqualTo(0));
+        }
+
         // ── IParsable<DateTimeNano> ────────────────────────────────────────────────
 
         [Test]

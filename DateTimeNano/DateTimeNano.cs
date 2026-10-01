@@ -21,7 +21,7 @@ namespace Seerstone
     /// </summary>
     [ProtoContract]
     public partial struct DateTimeNano : IEquatable<DateTimeNano>, IComparable<DateTimeNano>,
-        IFormattable, IParsable<DateTimeNano>, ISpanParsable<DateTimeNano>
+        IFormattable, IParsable<DateTimeNano>, ISpanParsable<DateTimeNano>, ISpanFormattable
     {
         /// <summary>
         /// Unix Epoch Date/Time (1970-01-01 00:00:00 UTC).
@@ -391,7 +391,43 @@ namespace Seerstone
         /// <returns>Formatted string.</returns>
         public override string ToString()
         {
-            return $"{DateTime:yyyy-MM-dd HH:mm:ss}.{SecondsFractionInNanoseconds:D9}";
+            // Build the result directly into the destination string's buffer via TryFormat,
+            // avoiding the two intermediate allocations that the equivalent interpolated
+            // string ($"{DateTime:yyyy-MM-dd HH:mm:ss}.{...:D9}") would otherwise produce.
+            return string.Create(29, this, static (span, value) => value.TryFormat(span, out _, default, null));
+        }
+
+        /// <summary>
+        /// Tries to format this <see cref="DateTimeNano"/> into the provided span as
+        /// "yyyy-MM-dd HH:mm:ss.fffffffff", without allocating.
+        /// </summary>
+        /// <param name="destination">The span to write the formatted value into.</param>
+        /// <param name="charsWritten">The number of characters written to <paramref name="destination"/>.</param>
+        /// <param name="format">Ignored; this type only supports its default format.</param>
+        /// <param name="provider">Ignored; this type's default format is culture-invariant.</param>
+        /// <returns><see langword="true"/> if the formatting succeeded; otherwise <see langword="false"/>.</returns>
+        public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format = default, IFormatProvider? provider = null)
+        {
+            if (!format.IsEmpty && !format.Equals("G", StringComparison.Ordinal) &&
+                !format.Equals("g", StringComparison.Ordinal) && !format.Equals("O", StringComparison.Ordinal) &&
+                !format.Equals("o", StringComparison.Ordinal))
+            {
+                // Non-default format strings fall back to DateTime precision, matching ToString(string?, IFormatProvider?).
+                return DateTime.TryFormat(destination, out charsWritten, format, provider);
+            }
+
+            const int length = 29; // "yyyy-MM-dd HH:mm:ss" (19) + '.' (1) + "fffffffff" (9)
+            if (destination.Length < length)
+            {
+                charsWritten = 0;
+                return false;
+            }
+
+            DateTime.TryFormat(destination[..19], out _, "yyyy-MM-dd HH:mm:ss");
+            destination[19] = '.';
+            SecondsFractionInNanoseconds.TryFormat(destination.Slice(20, 9), out _, "D9");
+            charsWritten = length;
+            return true;
         }
 
         /// <inheritdoc/>
