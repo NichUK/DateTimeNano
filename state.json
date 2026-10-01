@@ -1,63 +1,21 @@
 {
-  "last_run": "2026-06-16T14:27:31Z",
-  "last_run_id": "27624653742",
+  "last_run": "2026-10-01T09:33:43Z",
+  "last_run_id": "36800967755",
   "comments_made": [],
   "issues_commented": [],
   "backlog_cursor": null,
   "fix_attempts": [],
   "improvements_submitted": [
     {
-      "branch": "repo-assist/improve-arithmetic-operators",
-      "description": "Add + and - arithmetic operators for nanosecond offsets",
-      "pr_number": 15,
-      "date": "2026-06-13"
-    },
-    {
-      "branch": "repo-assist/eng-update-deps-2026-06",
-      "description": "Update protobuf-net.Core 3.2.45 to 3.2.56",
-      "pr_number": 14,
-      "date": "2026-06-13"
-    },
-    {
-      "branch": "repo-assist/perf-generated-regex-2026-06",
-      "description": "Replace compiled Regex with [GeneratedRegex] source-generated regex",
-      "pr_number": 17,
-      "date": "2026-06-13"
-    },
-    {
-      "branch": "repo-assist/improve-timespan-interop",
-      "description": "Add Add(TimeSpan), operator+(TimeSpan), operator-(TimeSpan) interop",
-      "pr_number": 18,
-      "date": "2026-06-13"
-    },
-    {
-      "branch": "repo-assist/test-coverage-2026-06",
-      "description": "Add 15 new tests: implicit operators, parts constructor, local DateTime, Date property, overflow guards, negative Add*, Equals(object?), T-separator TryParse, Subtract overflow",
-      "pr_number": 20,
-      "date": "2026-06-14"
-    },
-    {
-      "branch": "repo-assist/improve-unix-epoch-helpers-51771b7",
-      "description": "Add ToUnixMilliseconds, ToUnixSeconds, FromUnixMilliseconds, FromUnixSeconds",
-      "pr_number": 22,
-      "date": "2026-06-14"
-    },
-    {
-      "branch": "repo-assist/improve-datetimeoffset-interop",
-      "description": "Add DateTimeOffset constructor, ToDateTimeOffsetUtc(), and implicit operators",
-      "pr_temp_id": "#aw_dto_interop",
-      "date": "2026-06-16"
-    },
-    {
-      "branch": "repo-assist/forward-parsable-formattable-2026-06",
-      "description": "Implement IFormattable, IParsable<DateTimeNano>, ISpanParsable<DateTimeNano>",
-      "pr_temp_id": "#aw_parsable_fmt",
-      "date": "2026-06-16"
+      "branch": "repo-assist/eng-sync-develop-with-main-2026-10",
+      "description": "Merged main into develop: restores dotnet.yml CI workflow and several previously-merged library features (arithmetic/TimeSpan/DateTimeOffset interop, IFormattable/IParsable/ISpanParsable, Unix epoch helpers, GeneratedRegex perf, protobuf-net.Core 3.2.56, 411 lines of tests) that existed only on main. Build + 87/87 tests passed on net8/9/10.",
+      "date": "2026-10-01"
     }
   ],
   "monthly_activity_issue": {
-    "month": "2026-06",
-    "number": 16
+    "month": "2026-10",
+    "number": null,
+    "note": "Issue #16 (2026-06) was closed by maintainer on 2026-06-17. Created new issue for 2026-10 this run; number not yet known (created via safeoutputs create_issue, resolves post-merge)."
   },
-  "notes": "Run 5: Added 2 new draft PRs this run — DateTimeOffset interop (#aw_dto_interop, approx #25) and IFormattable/IParsable/ISpanParsable (#aw_parsable_fmt, approx #26). Task 2 fell back: no real user issues exist (all open issues are auto-generated). Issues #19 and #21 are duplicate informational issues about the CI cache PR that could not be pushed due to protected workflow files — #19 should be closed as superseded by #21. Issues #23/#24 are rate-limit/failure reports, will auto-expire. Existing open Repo Assist PRs: #14, #15, #17, #18, #20, #22 (6 total before this run). CI action_required status is still present for all bot PRs — maintainer needs to approve workflow runs. Major upgrades (NUnit 3->4, coverlet 6->10, SDK 17->18) still deferred."
+  "notes": "Run 2026-10-01: Discovered develop (default branch) had drifted far behind main - missing CI workflow (.github/workflows/dotnet.yml) entirely and ~6 previously-merged repo-assist features/tests (PRs #14,15,17,18,20,22,25,26 all merged to main, none present on develop). Opened PR merging main->develop (2 trivial conflicts in repo-assist.lock.yml/repo-assist.md resolved keeping develop's live workflow config). Build succeeded, 87/87 tests passed all TFMs. Open issues #33/#34/#35 are all auto-generated Repo Assist engine-auth-failure reports (HTTP 401 from provider) - not real bugs, nothing to comment on/fix; they self-expire. Recommend maintainer investigate the recurring 401 auth failures (possible expired COPILOT_PROVIDER_API_KEY). Task 2/5 fell back since no real user issues or additional low-risk improvements were found beyond the sync. No open Repo Assist PRs existed at start of this run (previous ones all merged in June). Next run: check if the sync PR was merged/reviewed; if merged, re-baseline which branch (main vs develop) is canonical going forward to prevent recurrence."
 }
