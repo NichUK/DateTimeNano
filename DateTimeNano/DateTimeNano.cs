@@ -6,6 +6,7 @@
 
 using ProtoBuf;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace Seerstone
@@ -19,16 +20,37 @@ namespace Seerstone
     /// DataBento timestamps are mainly in nanoseconds since epoch.
     /// </summary>
     [ProtoContract]
-    public struct DateTimeNano : IEquatable<DateTimeNano>, IComparable<DateTimeNano>
+    public partial struct DateTimeNano : IEquatable<DateTimeNano>, IComparable<DateTimeNano>,
+        IFormattable, IParsable<DateTimeNano>, ISpanParsable<DateTimeNano>
     {
         /// <summary>
         /// Unix Epoch Date/Time (1970-01-01 00:00:00 UTC).
         /// </summary>
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        private static readonly Regex DateTimeRegex = new Regex(
-            @"(?<year>\d+)-(?<month>\d+)-(?<day>\d+)\D(?<hour>\d+):(?<minute>\d+):(?<second>\d+)\.*(?<millisecond>\d{0,3})(?<microsecond>\d{0,3})(?<nanosecond>\d{0,3})",
-            RegexOptions.Compiled);
+        /// <summary>
+        /// The minimum representable value: the Unix epoch (1970-01-01 00:00:00.000000000 UTC).
+        /// </summary>
+        public static readonly DateTimeNano MinValue = new DateTimeNano(0UL);
+
+        /// <summary>
+        /// The maximum representable value (~2554-07-21 23:34:33 UTC), corresponding to
+        /// <see cref="ulong.MaxValue"/> nanoseconds since the Unix epoch.
+        /// </summary>
+        public static readonly DateTimeNano MaxValue = new DateTimeNano(ulong.MaxValue);
+
+        /// <summary>
+        /// Gets the current UTC date and time as a <see cref="DateTimeNano"/>.
+        /// Precision matches <see cref="DateTime.UtcNow"/> (~100 ns), so
+        /// <see cref="Nanoseconds"/> will always be zero.
+        /// </summary>
+        public static DateTimeNano Now => new DateTimeNano(DateTime.UtcNow);
+
+        private static readonly long EpochTicks = Epoch.Ticks;
+
+        [GeneratedRegex(
+            @"(?<year>\d+)-(?<month>\d+)-(?<day>\d+)\D(?<hour>\d+):(?<minute>\d+):(?<second>\d+)\.*(?<millisecond>\d{0,3})(?<microsecond>\d{0,3})(?<nanosecond>\d{0,3})")]
+        private static partial Regex DateTimeRegex();
 
         /// <summary>
         /// UTC DateTime part of the DateTimeNano (excludes the sub-microsecond nanoseconds portion).
@@ -49,7 +71,7 @@ namespace Seerstone
         /// <summary>
         /// Total ticks (100 ns units) truncated to microsecond precision; excludes sub-microsecond nanoseconds.
         /// </summary>
-        public long TotalTicks => Epoch.AddTicks((long)(NanosecondsSinceEpoch / 1000) * 10).Ticks;
+        public long TotalTicks => EpochTicks + (long)(NanosecondsSinceEpoch / 1000) * 10;
 
         /// <summary>
         /// Sub-microsecond nanoseconds (0-999), i.e. the last three digits of the nanosecond timestamp.
@@ -59,7 +81,7 @@ namespace Seerstone
         /// <summary>
         /// Fractional seconds expressed in nanoseconds (0-999_999_999).
         /// </summary>
-        public long SecondsFractionInNanoseconds => DateTime.Millisecond * 1000_000 + DateTime.Microsecond * 1000 + Nanoseconds;
+        public long SecondsFractionInNanoseconds => (long)(NanosecondsSinceEpoch % 1_000_000_000);
 
         /// <summary>
         /// Parse a string in the format "yyyy-MM-dd HH:mm:ss.fffffffff".
@@ -90,7 +112,7 @@ namespace Seerstone
             if (string.IsNullOrEmpty(dateTimeString))
                 return false;
 
-            var match = DateTimeRegex.Match(dateTimeString);
+            var match = DateTimeRegex().Match(dateTimeString);
             if (!match.Success)
                 return false;
 
@@ -234,6 +256,17 @@ namespace Seerstone
         }
 
         /// <summary>
+        /// Add a <see cref="TimeSpan"/> to the <see cref="DateTimeNano"/> and return a new <see cref="DateTimeNano"/>.
+        /// Precision is limited to 100-nanosecond tick resolution (matching <see cref="TimeSpan"/> precision).
+        /// </summary>
+        /// <param name="timeSpan">The duration to add. May be negative to subtract.</param>
+        /// <returns>A new <see cref="DateTimeNano"/>.</returns>
+        public DateTimeNano Add(TimeSpan timeSpan)
+        {
+            return AddNanoseconds(timeSpan.Ticks * 100);
+        }
+
+        /// <summary>
         /// Add days to the DateTimeNano and return a new DateTimeNano.
         /// </summary>
         /// <param name="days">Days to add. May be negative to subtract.</param>
@@ -313,6 +346,46 @@ namespace Seerstone
         }
 
         /// <summary>
+        /// Returns the number of whole milliseconds since the Unix epoch (1970-01-01 00:00:00 UTC).
+        /// Sub-millisecond nanoseconds are truncated.
+        /// </summary>
+        /// <returns>Milliseconds since the Unix epoch.</returns>
+        public long ToUnixMilliseconds() => (long)(NanosecondsSinceEpoch / 1_000_000UL);
+
+        /// <summary>
+        /// Returns the number of whole seconds since the Unix epoch (1970-01-01 00:00:00 UTC).
+        /// Sub-second nanoseconds are truncated.
+        /// </summary>
+        /// <returns>Seconds since the Unix epoch.</returns>
+        public long ToUnixSeconds() => (long)(NanosecondsSinceEpoch / 1_000_000_000UL);
+
+        /// <summary>
+        /// Creates a <see cref="DateTimeNano"/> from a Unix epoch value in milliseconds.
+        /// </summary>
+        /// <param name="milliseconds">Milliseconds since 1970-01-01 00:00:00 UTC. Must be non-negative.</param>
+        /// <returns>A new <see cref="DateTimeNano"/>.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="milliseconds"/> is negative.</exception>
+        public static DateTimeNano FromUnixMilliseconds(long milliseconds)
+        {
+            if (milliseconds < 0)
+                throw new ArgumentOutOfRangeException(nameof(milliseconds), "Value must be non-negative.");
+            return new DateTimeNano((ulong)milliseconds * 1_000_000UL);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="DateTimeNano"/> from a Unix epoch value in seconds.
+        /// </summary>
+        /// <param name="seconds">Seconds since 1970-01-01 00:00:00 UTC. Must be non-negative.</param>
+        /// <returns>A new <see cref="DateTimeNano"/>.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="seconds"/> is negative.</exception>
+        public static DateTimeNano FromUnixSeconds(long seconds)
+        {
+            if (seconds < 0)
+                throw new ArgumentOutOfRangeException(nameof(seconds), "Value must be non-negative.");
+            return new DateTimeNano((ulong)seconds * 1_000_000_000UL);
+        }
+
+        /// <summary>
         /// Returns a string representation in the format "yyyy-MM-dd HH:mm:ss.fffffffff".
         /// </summary>
         /// <returns>Formatted string.</returns>
@@ -335,6 +408,18 @@ namespace Seerstone
 
         /// <summary>Returns the nanosecond difference <c>left - right</c>.</summary>
         public static long operator -(DateTimeNano left, DateTimeNano right) => left.Subtract(right);
+
+        /// <summary>Returns a new <see cref="DateTimeNano"/> shifted forward by <paramref name="nanoseconds"/>.</summary>
+        public static DateTimeNano operator +(DateTimeNano left, long nanoseconds) => left.AddNanoseconds(nanoseconds);
+
+        /// <summary>Returns a new <see cref="DateTimeNano"/> shifted back by <paramref name="nanoseconds"/>.</summary>
+        public static DateTimeNano operator -(DateTimeNano left, long nanoseconds) => left.AddNanoseconds(-nanoseconds);
+
+        /// <summary>Shifts <paramref name="left"/> forward by the given <see cref="TimeSpan"/>.</summary>
+        public static DateTimeNano operator +(DateTimeNano left, TimeSpan right) => left.Add(right);
+
+        /// <summary>Shifts <paramref name="left"/> back by the given <see cref="TimeSpan"/>.</summary>
+        public static DateTimeNano operator -(DateTimeNano left, TimeSpan right) => left.Add(-right);
 
         /// <summary>Returns <see langword="true"/> if both instances represent the same nanosecond.</summary>
         public static bool operator ==(DateTimeNano left, DateTimeNano right) => left.Equals(right);
@@ -359,5 +444,71 @@ namespace Seerstone
 
         /// <summary>Implicitly converts a <see cref="System.DateTime"/> to a <see cref="DateTimeNano"/>.</summary>
         public static implicit operator DateTimeNano(DateTime d) => new DateTimeNano(d);
+
+        /// <summary>
+        /// Returns a string representation using the specified format.
+        /// </summary>
+        /// <param name="format">
+        ///   Format string. Use <see langword="null"/>, <c>"G"</c>, <c>"g"</c>, <c>"O"</c>, or <c>"o"</c>
+        ///   for full nanosecond-precision output (<c>"yyyy-MM-dd HH:mm:ss.fffffffff"</c>).
+        ///   Any other standard or custom <see cref="DateTime"/> format string produces output at
+        ///   <see cref="DateTime"/> precision (sub-microsecond nanoseconds are not included).
+        /// </param>
+        /// <param name="formatProvider">Culture or format provider; ignored for full-precision formats.</param>
+        public string ToString(string? format, IFormatProvider? formatProvider)
+        {
+            if (string.IsNullOrEmpty(format) || format == "G" || format == "g" ||
+                format == "O" || format == "o")
+                return ToString();
+            return DateTime.ToString(format, formatProvider);
+        }
+
+        /// <summary>
+        /// Parses a <see cref="DateTimeNano"/> from a string, ignoring <paramref name="provider"/>.
+        /// </summary>
+        public static DateTimeNano Parse(string s, IFormatProvider? provider) => Parse(s);
+
+        /// <summary>
+        /// Attempts to parse a <see cref="DateTimeNano"/> from a string, ignoring <paramref name="provider"/>.
+        /// </summary>
+        public static bool TryParse(
+            [NotNullWhen(true)] string? s,
+            IFormatProvider? provider,
+            [MaybeNullWhen(false)] out DateTimeNano result)
+            => TryParse(s, out result);
+
+        /// <inheritdoc/>
+        static DateTimeNano ISpanParsable<DateTimeNano>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+            => Parse(s.ToString());
+
+        /// <inheritdoc/>
+        static bool ISpanParsable<DateTimeNano>.TryParse(
+            ReadOnlySpan<char> s,
+            IFormatProvider? provider,
+            out DateTimeNano result)
+            => TryParse(s.IsEmpty ? null : s.ToString(), out result);
+
+        /// <summary>
+        /// Create a <see cref="DateTimeNano"/> from a <see cref="System.DateTimeOffset"/>.
+        /// The offset is converted to UTC before the nanosecond value is computed,
+        /// so the stored timestamp always represents the UTC instant.
+        /// </summary>
+        /// <param name="datetimeOffset">The source <see cref="System.DateTimeOffset"/>.</param>
+        public DateTimeNano(DateTimeOffset datetimeOffset)
+            : this(datetimeOffset.UtcDateTime) { }
+
+        /// <summary>
+        /// Returns the UTC date and time as a <see cref="System.DateTimeOffset"/> with a zero UTC offset.
+        /// Sub-microsecond nanoseconds are not representable in <see cref="System.DateTimeOffset"/>
+        /// and are truncated; access them via <see cref="Nanoseconds"/>.
+        /// </summary>
+        /// <returns>A <see cref="System.DateTimeOffset"/> in UTC.</returns>
+        public DateTimeOffset ToDateTimeOffsetUtc() => new DateTimeOffset(DateTime, TimeSpan.Zero);
+
+        /// <summary>Implicitly converts a <see cref="DateTimeNano"/> to a UTC <see cref="System.DateTimeOffset"/>.</summary>
+        public static implicit operator DateTimeOffset(DateTimeNano d) => d.ToDateTimeOffsetUtc();
+
+        /// <summary>Implicitly converts a <see cref="System.DateTimeOffset"/> to a <see cref="DateTimeNano"/>.</summary>
+        public static implicit operator DateTimeNano(DateTimeOffset d) => new DateTimeNano(d);
     }
 }
