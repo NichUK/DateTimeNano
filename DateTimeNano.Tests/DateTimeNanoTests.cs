@@ -115,6 +115,16 @@ namespace DateTimeNano.Tests
         }
 
         [Test]
+        public void AddDays_Negative_ShouldDecreaseCorrectly()
+        {
+            const int daysToAdd = -1;
+            var result = _baseDateTimeNano.AddDays(daysToAdd);
+
+            const long expectedNanosecondsPerDay = (long)daysToAdd * 24 * 60 * 60 * 1_000_000_000;
+            Assert.That(_baseNanoseconds + unchecked((ulong)expectedNanosecondsPerDay), Is.EqualTo(result.ToUnixNanoseconds()));
+        }
+
+        [Test]
         public void AddMonths_ShouldIncreaseByExpectedMonths()
         {
             const int monthsToAdd = 2;
@@ -733,6 +743,16 @@ namespace DateTimeNano.Tests
 
             var success = SpanTryParse<Seerstone.DateTimeNano>("2025-02-10 20:27:12.123456789".AsSpan(), out var result);
             Assert.That(success, Is.True);
+            Assert.That(result.ToString(), Is.EqualTo("2025-02-10 20:27:12.123456789"));
+        }
+
+        [Test]
+        public void ISpanParsable_Parse_WorksViaGenericConstraint()
+        {
+            static T SpanParse<T>(ReadOnlySpan<char> s) where T : ISpanParsable<T>
+                => T.Parse(s, null);
+
+            var result = SpanParse<Seerstone.DateTimeNano>("2025-02-10 20:27:12.123456789".AsSpan());
             Assert.That(result.ToString(), Is.EqualTo("2025-02-10 20:27:12.123456789"));
         }
 
