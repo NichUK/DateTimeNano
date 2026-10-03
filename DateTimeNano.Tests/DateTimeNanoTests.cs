@@ -87,6 +87,24 @@ namespace DateTimeNano.Tests
         }
 
         [Test]
+        public void AddMilliseconds_Negative_ShouldDecreaseCorrectly()
+        {
+            const long millisecondsToSubtract = -2; // -2 milliseconds = -2,000,000 nanoseconds
+            var result = _baseDateTimeNano.AddMilliseconds(millisecondsToSubtract);
+
+            Assert.That(_baseNanoseconds - (ulong)(-millisecondsToSubtract * 1_000_000), Is.EqualTo(result.ToUnixNanoseconds()));
+        }
+
+        [Test]
+        public void AddSeconds_Negative_ShouldDecreaseCorrectly()
+        {
+            const long secondsToSubtract = -3; // -3 seconds = -3,000,000,000 nanoseconds
+            var result = _baseDateTimeNano.AddSeconds(secondsToSubtract);
+
+            Assert.That(_baseNanoseconds - (ulong)(-secondsToSubtract * 1_000_000_000), Is.EqualTo(result.ToUnixNanoseconds()));
+        }
+
+        [Test]
         public void AddMinutes_ShouldIncreaseCorrectly()
         {
             const long minutesToAdd = 4; // 4 minutes = 4 * 60 * 1,000,000,000 nanoseconds
@@ -335,6 +353,14 @@ namespace DateTimeNano.Tests
             var b = new Seerstone.DateTimeNano(1_000_000_001UL);
             Assert.That(a != b, Is.True);
             Assert.That(a == b, Is.False);
+        }
+
+        [Test]
+        public void GetHashCode_ShouldDiffer_ForDifferentValues()
+        {
+            var a = new Seerstone.DateTimeNano(1_000_000_000UL);
+            var b = new Seerstone.DateTimeNano(2_000_000_000UL);
+            Assert.That(a.GetHashCode(), Is.Not.EqualTo(b.GetHashCode()));
         }
 
         [Test]
