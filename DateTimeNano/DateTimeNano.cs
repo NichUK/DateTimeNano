@@ -210,9 +210,10 @@ namespace Seerstone
         /// </summary>
         /// <param name="microseconds">Microseconds to add. May be negative to subtract.</param>
         /// <returns>A new DateTimeNano.</returns>
+        /// <exception cref="OverflowException">Thrown when the microsecond-to-nanosecond conversion overflows a <see cref="long"/>.</exception>
         public DateTimeNano AddMicroseconds(long microseconds)
         {
-            return AddNanoseconds(microseconds * 1000);
+            return AddNanoseconds(checked(microseconds * 1000));
         }
 
         /// <summary>
@@ -220,9 +221,10 @@ namespace Seerstone
         /// </summary>
         /// <param name="milliseconds">Milliseconds to add. May be negative to subtract.</param>
         /// <returns>A new DateTimeNano.</returns>
+        /// <exception cref="OverflowException">Thrown when the millisecond-to-nanosecond conversion overflows a <see cref="long"/>.</exception>
         public DateTimeNano AddMilliseconds(long milliseconds)
         {
-            return AddNanoseconds(milliseconds * 1000_000);
+            return AddNanoseconds(checked(milliseconds * 1000_000));
         }
 
         /// <summary>
@@ -230,9 +232,10 @@ namespace Seerstone
         /// </summary>
         /// <param name="seconds">Seconds to add. May be negative to subtract.</param>
         /// <returns>A new DateTimeNano.</returns>
+        /// <exception cref="OverflowException">Thrown when the second-to-nanosecond conversion overflows a <see cref="long"/>.</exception>
         public DateTimeNano AddSeconds(long seconds)
         {
-            return AddNanoseconds(seconds * 1000_000_000);
+            return AddNanoseconds(checked(seconds * 1000_000_000));
         }
 
         /// <summary>
@@ -240,9 +243,10 @@ namespace Seerstone
         /// </summary>
         /// <param name="minutes">Minutes to add. May be negative to subtract.</param>
         /// <returns>A new DateTimeNano.</returns>
+        /// <exception cref="OverflowException">Thrown when the minute-to-nanosecond conversion overflows a <see cref="long"/>.</exception>
         public DateTimeNano AddMinutes(long minutes)
         {
-            return AddNanoseconds(minutes * 60 * 1000_000_000);
+            return AddNanoseconds(checked(minutes * 60 * 1000_000_000));
         }
 
         /// <summary>
@@ -250,9 +254,10 @@ namespace Seerstone
         /// </summary>
         /// <param name="hours">Hours to add. May be negative to subtract.</param>
         /// <returns>A new DateTimeNano.</returns>
+        /// <exception cref="OverflowException">Thrown when the hour-to-nanosecond conversion overflows a <see cref="long"/>.</exception>
         public DateTimeNano AddHours(long hours)
         {
-            return AddNanoseconds(hours * 60 * 60 * 1000_000_000);
+            return AddNanoseconds(checked(hours * 60 * 60 * 1000_000_000));
         }
 
         /// <summary>
@@ -261,9 +266,10 @@ namespace Seerstone
         /// </summary>
         /// <param name="timeSpan">The duration to add. May be negative to subtract.</param>
         /// <returns>A new <see cref="DateTimeNano"/>.</returns>
+        /// <exception cref="OverflowException">Thrown when the tick-to-nanosecond conversion overflows a <see cref="long"/>.</exception>
         public DateTimeNano Add(TimeSpan timeSpan)
         {
-            return AddNanoseconds(timeSpan.Ticks * 100);
+            return AddNanoseconds(checked(timeSpan.Ticks * 100));
         }
 
         /// <summary>
@@ -271,9 +277,10 @@ namespace Seerstone
         /// </summary>
         /// <param name="days">Days to add. May be negative to subtract.</param>
         /// <returns>A new DateTimeNano.</returns>
+        /// <exception cref="OverflowException">Thrown when the day-to-nanosecond conversion overflows a <see cref="long"/>.</exception>
         public DateTimeNano AddDays(int days)
         {
-            return AddNanoseconds((long)days * 24 * 60 * 60 * 1_000_000_000);
+            return AddNanoseconds(checked((long)days * 24 * 60 * 60 * 1_000_000_000));
         }
 
         /// <summary>

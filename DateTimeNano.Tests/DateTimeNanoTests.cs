@@ -753,5 +753,44 @@ namespace DateTimeNano.Tests
             var zero = Seerstone.DateTimeNano.MinValue;
             Assert.Throws<OverflowException>(() => large.Subtract(zero));
         }
+
+        // ── Add* multiplication overflow ─────────────────────────────────────────
+
+        [Test]
+        public void AddHours_ShouldThrow_WhenMultiplicationOverflows()
+        {
+            // hours * 60 * 60 * 1_000_000_000 overflows long before AddNanoseconds is even called.
+            Assert.Throws<OverflowException>(() => _baseDateTimeNano.AddHours(long.MaxValue));
+        }
+
+        [Test]
+        public void AddDays_ShouldThrow_WhenMultiplicationOverflows()
+        {
+            Assert.Throws<OverflowException>(() => _baseDateTimeNano.AddDays(int.MaxValue));
+        }
+
+        [Test]
+        public void AddMinutes_ShouldThrow_WhenMultiplicationOverflows()
+        {
+            Assert.Throws<OverflowException>(() => _baseDateTimeNano.AddMinutes(long.MaxValue));
+        }
+
+        [Test]
+        public void AddSeconds_ShouldThrow_WhenMultiplicationOverflows()
+        {
+            Assert.Throws<OverflowException>(() => _baseDateTimeNano.AddSeconds(long.MaxValue));
+        }
+
+        [Test]
+        public void AddMilliseconds_ShouldThrow_WhenMultiplicationOverflows()
+        {
+            Assert.Throws<OverflowException>(() => _baseDateTimeNano.AddMilliseconds(long.MaxValue));
+        }
+
+        [Test]
+        public void AddMicroseconds_ShouldThrow_WhenMultiplicationOverflows()
+        {
+            Assert.Throws<OverflowException>(() => _baseDateTimeNano.AddMicroseconds(long.MaxValue));
+        }
     }
 }
