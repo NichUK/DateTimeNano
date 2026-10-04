@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-10-03T14:19:00Z",
-  "last_run_id": "37129126159",
+  "last_run": "2026-10-04T01:44:23Z",
+  "last_run_id": "37168826626",
   "comments_made": [],
   "issues_commented": [],
   "backlog_cursor": null,
@@ -28,23 +28,42 @@
     },
     {
       "branch": "repo-assist/improve-checked-overflow-add-methods",
-      "description": "Wrapped AddMicroseconds/AddMilliseconds/AddSeconds/AddMinutes/AddHours/AddDays/Add(TimeSpan) multiplication in checked(...) so overflow throws OverflowException instead of silently wrapping to a wrong timestamp. Added 6 new tests, 96/96 passing. Draft PR created (Task 5 - Coding Improvements).",
+      "description": "Wrapped Add* multiplication in checked(...) (PR #42, still open awaiting maintainer review).",
       "date": "2026-10-03"
+    },
+    {
+      "branch": "repo-assist/perf-parse-valuespan-no-alloc",
+      "description": "TryParse now uses Group.ValueSpan + int.Parse(ReadOnlySpan<char>) instead of Group.Value + int.Parse(string), removing up to 9 substring allocations per parse call. 90/90 tests passing on net8/9/10. Draft PR created (Task 8 - Performance Improvements).",
+      "date": "2026-10-04"
+    },
+    {
+      "branch": "repo-assist/eng-bump-protobuf-net-core",
+      "description": "Bumped protobuf-net.Core 3.2.56 -> 3.4.30 (same major version). 90/90 tests passing on net8/9/10. Draft PR created (Task 4 - Engineering Investments).",
+      "date": "2026-10-04"
     }
   ],
   "monthly_activity_issue": {
     "month": "2026-10",
     "number": 38,
-    "note": "Updated 2026-10-03 14:19 UTC to add third open PR (checked-overflow fix) to Suggested Actions; prepended new run history entry."
+    "note": "Updated 2026-10-04 01:44 UTC: added perf (ValueSpan) and eng (protobuf-net.Core bump) PRs to Suggested Actions; prepended new run history entry."
   },
   "open_issues_snapshot": {
-    "date": "2026-10-03",
+    "date": "2026-10-04",
     "38": "Monthly Activity tracker issue itself - the only open issue in the repo. No real bugs/questions pending."
   },
   "open_prs_snapshot": {
-    "40": "test coverage PR, open, no CI configured, mergeable_state unstable (likely just no required checks), draft",
-    "41": "test coverage PR, open, no CI configured, mergeable_state unstable, draft",
-    "new_checked_overflow": "repo-assist/improve-checked-overflow-add-methods - draft PR fixing silent overflow in Add* helpers"
+    "40": "test coverage PR, open, draft, no CI configured, awaiting maintainer review",
+    "41": "test coverage PR, open, draft, no CI configured, awaiting maintainer review",
+    "42": "checked-overflow fix PR, open, draft, no CI configured, awaiting maintainer review",
+    "new_perf_valuespan": "repo-assist/perf-parse-valuespan-no-alloc - draft PR removing substring allocations in TryParse",
+    "new_eng_protobuf_bump": "repo-assist/eng-bump-protobuf-net-core - draft PR bumping protobuf-net.Core 3.2.56->3.4.30"
   },
-  "notes": "Run 2026-10-03 14:19 UTC (run 37129126159): selected tasks [5 Coding Improvements, 2 Issue Comment, 6 Maintain Repo Assist PRs]. Task 2: nothing to do, only open issue is tracker #38, no new human comments anywhere. Task 6: checked PRs #40 and #41 - get_status shows 0 checks/pending (no CI configured on these branches), mergeable_state 'unstable' but no actual conflict markers reported, nothing actionable to fix/push. Task 5: found a genuine bug-class issue - AddMicroseconds/AddMilliseconds/AddSeconds/AddMinutes/AddHours/AddDays/Add(TimeSpan) all multiply their arg by a constant in an UNCHECKED context before calling AddNanoseconds, so for very large inputs (e.g. AddHours(long.MaxValue)) the multiplication silently overflows/wraps BEFORE AddNanoseconds' own overflow check can catch it, producing a silently wrong DateTimeNano instead of throwing. Fixed by wrapping each multiplication in checked(...). Added 6 new overflow tests (one per method). 96/96 tests passing on net8/9/10. Created draft PR via safeoutputs. Updated Monthly Activity issue #38. Next run: check if PR #40/#41/new overflow PR were merged/reviewed; continue scanning for new issues; if nothing new, consider Task 4 (dependency/CI check - AGENTS.md absent, no CI workflow file verified yet) or Task 8 (perf) next."
+  "dependency_check_2026_10_04": {
+    "protobuf-net.Core": "3.2.56 -> 3.4.30 (bumped, PR created)",
+    "NUnit": "3.14.0 -> 5.0.0 available (MAJOR, deferred - breaking)",
+    "NUnit3TestAdapter": "4.5.0 -> 6.3.0 available (MAJOR, deferred, pairs with NUnit major)",
+    "Microsoft.NET.Test.Sdk": "17.8.0 -> 18.10.1 available (MAJOR, deferred)",
+    "coverlet.collector": "6.0.0 -> 10.1.0 available (MAJOR, deferred pending review)"
+  },
+  "notes": "Run 2026-10-04 01:44 UTC (run 37168826626): selected tasks [8 Performance, 10 Take Repo Forward, 4 Engineering Investments]. Task 8: reviewed DateTimeNano.cs for allocation hotspots; found TryParse(string) allocated up to 9 substrings via Group.Value for int.Parse - switched to Group.ValueSpan + int.Parse(ReadOnlySpan<char>), zero-allocation, same behavior, 90/90 tests pass on net8/9/10. Created draft PR. (Note: attempted a deeper span-based parse avoiding regex Match(string) entirely via EnumerateMatches, but abandoned it - EnumerateMatches doesn't expose named capture groups, so it can't eliminate the ToString() needed for the ISpanParsable path without a full custom parser; reverted that attempt.) Task 4: ran `dotnet list package --outdated`, found protobuf-net.Core (the only runtime dependency) has 3.4.30 available within the same major version - bumped and verified build+tests pass on all 3 TFMs. Test-only packages (NUnit, Test.Sdk, NUnit3TestAdapter, coverlet.collector) have MAJOR version bumps available but were deliberately deferred per project guidelines (prefer minor/patch; only propose major with clear benefit) - logged for future consideration. Task 10: reviewed state of previous 3 open PRs (#40, #41, #42) - all still open/draft/unreviewed with no CI configured and no conflicts, nothing actionable to push; concluded that the most valuable forward progress this run was the two new PRs above rather than touching unreviewed branches. Updated Monthly Activity issue #38 with both new PRs added to Suggested Actions and a new run history entry. Next run: check if any of the 5 open PRs (#40, #41, #42, perf-valuespan, eng-protobuf-bump) were merged or reviewed; if repo accumulates many open repo-assist PRs with no maintainer activity, consider surfacing that explicitly as a suggested action (e.g. batch-review request) rather than continuing to add more. Consider major test-tooling bumps (NUnit 5/Test.Sdk 18/NUnit3TestAdapter 6/coverlet 10) as a bundled Task 4 PR in a future run if a dedicated review window seems warranted."
 }
