@@ -118,15 +118,18 @@ namespace Seerstone
 
             try
             {
-                var year = int.Parse(match.Groups["year"].Value);
-                var month = int.Parse(match.Groups["month"].Value);
-                var day = int.Parse(match.Groups["day"].Value);
-                var hour = int.Parse(match.Groups["hour"].Value);
-                var minute = int.Parse(match.Groups["minute"].Value);
-                var second = int.Parse(match.Groups["second"].Value);
-                var millisecond = !string.IsNullOrEmpty(match.Groups["millisecond"].Value) ? int.Parse(match.Groups["millisecond"].Value) : 0;
-                var microsecond = !string.IsNullOrEmpty(match.Groups["microsecond"].Value) ? int.Parse(match.Groups["microsecond"].Value) : 0;
-                var nanosecond = !string.IsNullOrEmpty(match.Groups["nanosecond"].Value) ? int.Parse(match.Groups["nanosecond"].Value) : 0;
+                // Use ValueSpan rather than Value for each group: Value allocates a new substring
+                // per group (7 allocations per parse), whereas ValueSpan reads directly from the
+                // original input with no allocation.
+                var year = int.Parse(match.Groups["year"].ValueSpan);
+                var month = int.Parse(match.Groups["month"].ValueSpan);
+                var day = int.Parse(match.Groups["day"].ValueSpan);
+                var hour = int.Parse(match.Groups["hour"].ValueSpan);
+                var minute = int.Parse(match.Groups["minute"].ValueSpan);
+                var second = int.Parse(match.Groups["second"].ValueSpan);
+                var millisecond = match.Groups["millisecond"].ValueSpan.Length > 0 ? int.Parse(match.Groups["millisecond"].ValueSpan) : 0;
+                var microsecond = match.Groups["microsecond"].ValueSpan.Length > 0 ? int.Parse(match.Groups["microsecond"].ValueSpan) : 0;
+                var nanosecond = match.Groups["nanosecond"].ValueSpan.Length > 0 ? int.Parse(match.Groups["nanosecond"].ValueSpan) : 0;
                 result = new DateTimeNano(year, month, day, hour, minute, second, millisecond, microsecond, nanosecond);
                 return true;
             }
